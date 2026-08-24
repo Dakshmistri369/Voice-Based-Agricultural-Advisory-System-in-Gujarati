@@ -1,0 +1,777 @@
+/* Gujarati Kisaan Mitra AI - Centralized Dual Theme System (Black & White) */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Noto+Sans+Gujarati:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap');
+
+/* ── Default Dark Theme Variables ───────────────────────────── */
+:root, [data-theme="dark"] {
+  --bg-primary: #000000;
+  --bg-surface: #0D0D0D;
+  --bg-elevated: #1A1A1A;
+  --border-subtle: #2E2E2E;
+  --text-primary: #FFFFFF;
+  --text-secondary: #A3A3A3;
+  --text-muted: #6B6B6B;
+  --inverted-surface: #FFFFFF;
+  --inverted-text: #000000;
+  --chip-bg: #1A1A1A;
+  --chip-text: #FFFFFF;
+  --chip-border: #2E2E2E;
+  --chip-active-bg: #FFFFFF;
+  --chip-active-text: #000000;
+  --input-bg: #0D0D0D;
+  --input-border: #2E2E2E;
+  --input-text: #FFFFFF;
+  --input-placeholder: #6B6B6B;
+  --shadow: none;
+  --mic-ring-shadow: rgba(255, 255, 255, 0.4);
+  --skeleton-start: #0D0D0D;
+  --skeleton-mid: #1A1A1A;
+
+  /* Aliases */
+  --bg-base: var(--bg-primary);
+  --border-hairline: var(--border-subtle);
+  --bg-inverted: var(--inverted-surface);
+  --text-inverted: var(--inverted-text);
+  --card-shadow: var(--shadow);
+
+  --font-heading: 'Space Grotesk', sans-serif;
+  --font-body: 'Inter', sans-serif;
+  --font-gujarati: 'Noto Sans Gujarati', 'Hind Vadodara', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+/* ── Light Theme Variables ──────────────────────────────────── */
+[data-theme="light"], .theme-light {
+  --bg-primary: #FFFFFF;
+  --bg-surface: #F7F7F7;
+  --bg-elevated: #FFFFFF;
+  --border-subtle: #E0E0E0;
+  --text-primary: #000000;
+  --text-secondary: #4A4A4A;
+  --text-muted: #7A7A7A;
+  --inverted-surface: #000000;
+  --inverted-text: #FFFFFF;
+  --chip-bg: #F0F0F0;
+  --chip-text: #000000;
+  --chip-border: #D8D8D8;
+  --chip-active-bg: #000000;
+  --chip-active-text: #FFFFFF;
+  --input-bg: #FFFFFF;
+  --input-border: #D0D0D0;
+  --input-text: #000000;
+  --input-placeholder: #8A8A8A;
+  --shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --mic-ring-shadow: rgba(0, 0, 0, 0.25);
+  --skeleton-start: #F0F0F0;
+  --skeleton-mid: #E0E0E0;
+
+  /* Aliases */
+  --bg-base: var(--bg-primary);
+  --border-hairline: var(--border-subtle);
+  --bg-inverted: var(--inverted-surface);
+  --text-inverted: var(--inverted-text);
+  --card-shadow: var(--shadow);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   GLOBAL RESET & STREAMLIT CONTAINER THEMING
+═══════════════════════════════════════════════════════════════════ */
+html, body, [data-testid="stAppViewContainer"], .stApp {
+  background-color: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+  font-family: var(--font-gujarati), var(--font-body);
+  margin: 0;
+  padding: 0;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   WHITE THEME — Comprehensive text colour enforcement (BUG 4 deep fix)
+   All Streamlit native text elements inherit the wrong colour from
+   config.toml (textColor = '#FFFFFF'). Override every selector here.
+═══════════════════════════════════════════════════════════════════ */
+[data-theme="light"] p,
+[data-theme="light"] span,
+[data-theme="light"] label,
+[data-theme="light"] div,
+[data-theme="light"] h1,
+[data-theme="light"] h2,
+[data-theme="light"] h3,
+[data-theme="light"] h4,
+[data-theme="light"] h5,
+[data-theme="light"] h6,
+[data-theme="light"] li,
+[data-theme="light"] a,
+[data-theme="light"] .stMarkdown,
+[data-theme="light"] .stMarkdown p,
+[data-theme="light"] .stMarkdown li,
+[data-theme="light"] .stMarkdown h1,
+[data-theme="light"] .stMarkdown h2,
+[data-theme="light"] .stMarkdown h3,
+[data-theme="light"] [data-testid="stMarkdownContainer"],
+[data-theme="light"] [data-testid="stMarkdownContainer"] p,
+[data-theme="light"] [data-testid="stMarkdownContainer"] span,
+[data-theme="light"] [data-testid="stMarkdownContainer"] li,
+[data-theme="light"] [data-testid="stText"],
+[data-theme="light"] [data-testid="stCaptionContainer"],
+[data-theme="light"] [data-testid="stCaptionContainer"] p,
+[data-theme="light"] .stAlert p,
+[data-theme="light"] .stAlert span,
+[data-theme="light"] [data-testid="stWidgetLabel"] p,
+[data-theme="light"] [data-testid="stWidgetLabel"] label,
+[data-theme="light"] [data-testid="stWidgetLabel"] span,
+[data-theme="light"] .stRadio label,
+[data-theme="light"] .stCheckbox label,
+[data-theme="light"] [data-baseweb="radio"] label,
+[data-theme="light"] [data-testid="stRadio"] p,
+[data-theme="light"] [data-testid="stSelectbox"] div,
+[data-theme="light"] [data-testid="stSelectbox"] p,
+[data-theme="light"] [data-baseweb="select"] *,
+[data-theme="light"] [data-testid="stExpander"] summary p,
+[data-theme="light"] [data-testid="stExpander"] details summary,
+[data-theme="light"] [data-testid="stSidebar"] p,
+[data-theme="light"] [data-testid="stSidebar"] span,
+[data-theme="light"] [data-testid="stSidebar"] label,
+[data-theme="light"] [data-testid="stSidebar"] div {
+  color: var(--text-primary) !important;
+}
+
+/* Secondary/muted text in light theme */
+[data-theme="light"] [data-testid="stCaptionContainer"] p,
+[data-theme="light"] small {
+  color: var(--text-secondary) !important;
+}
+
+/* Main block container */
+.block-container {
+  padding-top: 0.75rem !important;
+  padding-bottom: 2.5rem !important;
+  max-width: 880px !important;
+}
+
+/* Hide default Streamlit chrome */
+#MainMenu, header, footer, [data-testid="stHeader"], [data-testid="stToolbar"] {
+  visibility: hidden !important;
+  height: 0px !important;
+  display: none !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   CORNER THEME TOGGLE BUTTON — Professional SVG Icons
+═══════════════════════════════════════════════════════════════════ */
+.st-key-corner_theme_toggle_btn {
+  display: inline-flex;
+  justify-content: flex-end;
+  margin-bottom: 0.5rem;
+}
+
+.st-key-corner_theme_toggle_btn button {
+  background-color: var(--bg-surface) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-subtle) !important;
+  border-radius: 9999px !important;
+  font-family: 'Inter', 'Space Grotesk', sans-serif !important;
+  font-size: 0.78rem !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.04em !important;
+  text-transform: uppercase !important;
+  padding: 0.4rem 1rem 0.4rem 0.8rem !important;
+  box-shadow: var(--shadow) !important;
+  cursor: pointer !important;
+  transition: all 0.18s ease !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.55rem !important;
+  min-height: 38px !important;
+  position: relative !important;
+}
+
+/* Professional Sun SVG icon — shown when in DARK mode (button → switch to White) */
+[data-theme="dark"] .st-key-corner_theme_toggle_btn button::before {
+  content: '';
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23FFFFFF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='5'/%3E%3Cline x1='12' y1='1' x2='12' y2='3'/%3E%3Cline x1='12' y1='21' x2='12' y2='23'/%3E%3Cline x1='4.22' y1='4.22' x2='5.64' y2='5.64'/%3E%3Cline x1='18.36' y1='18.36' x2='19.78' y2='19.78'/%3E%3Cline x1='1' y1='12' x2='3' y2='12'/%3E%3Cline x1='21' y1='12' x2='23' y2='12'/%3E%3Cline x1='4.22' y1='19.78' x2='5.64' y2='18.36'/%3E%3Cline x1='18.36' y1='5.64' x2='19.78' y2='4.22'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-size: 16px 16px;
+}
+
+/* Professional Moon SVG icon — shown when in LIGHT mode (button → switch to Black) */
+[data-theme="light"] .st-key-corner_theme_toggle_btn button::before {
+  content: '';
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-size: 16px 16px;
+}
+
+.st-key-corner_theme_toggle_btn button:hover {
+  background-color: var(--inverted-surface) !important;
+  color: var(--inverted-text) !important;
+  border-color: var(--inverted-surface) !important;
+  transform: scale(1.03) !important;
+}
+
+/* Update icon stroke color on hover */
+[data-theme="dark"] .st-key-corner_theme_toggle_btn button:hover::before {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='5'/%3E%3Cline x1='12' y1='1' x2='12' y2='3'/%3E%3Cline x1='12' y1='21' x2='12' y2='23'/%3E%3Cline x1='4.22' y1='4.22' x2='5.64' y2='5.64'/%3E%3Cline x1='18.36' y1='18.36' x2='19.78' y2='19.78'/%3E%3Cline x1='1' y1='12' x2='3' y2='12'/%3E%3Cline x1='21' y1='12' x2='23' y2='12'/%3E%3Cline x1='4.22' y1='19.78' x2='5.64' y2='18.36'/%3E%3Cline x1='18.36' y1='5.64' x2='19.78' y2='4.22'/%3E%3C/svg%3E");
+}
+
+[data-theme="light"] .st-key-corner_theme_toggle_btn button:hover::before {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23FFFFFF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z'/%3E%3C/svg%3E");
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   SIDEBAR COMPREHENSIVE THEMING (BUG 1 FIX)
+═══════════════════════════════════════════════════════════════════ */
+[data-testid="stSidebar"] {
+  background-color: var(--bg-surface) !important;
+  border-right: 1px solid var(--border-subtle) !important;
+  color: var(--text-primary) !important;
+}
+
+[data-testid="stSidebar"] > div:first-child {
+  padding: 1rem 0.75rem !important;
+  background-color: var(--bg-surface) !important;
+}
+
+/* Sidebar Nav Item Buttons */
+[data-testid="stSidebar"] .stButton > button {
+  width: 100% !important;
+  text-align: left !important;
+  background: transparent !important;
+  border: none !important;
+  border-radius: 8px !important;
+  color: var(--text-secondary) !important;
+  font-family: var(--font-gujarati), var(--font-body) !important;
+  font-size: 0.9rem !important;
+  padding: 0.65rem 0.85rem !important;
+  margin: 1px 0 !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+  height: 44px !important;
+  display: flex !important;
+  align-items: center !important;
+  box-shadow: none !important;
+}
+
+[data-testid="stSidebar"] .stButton > button:hover {
+  background: var(--bg-elevated) !important;
+  color: var(--text-primary) !important;
+  border: none !important;
+}
+
+/* Active sidebar nav item */
+.nav-item-active > button {
+  background: var(--bg-elevated) !important;
+  color: var(--text-primary) !important;
+  font-weight: 700 !important;
+  border-left: 3px solid var(--text-primary) !important;
+  border-radius: 0 8px 8px 0 !important;
+  padding-left: 0.6rem !important;
+}
+
+/* Sidebar Settings Expander */
+[data-testid="stSidebar"] [data-testid="stExpander"],
+[data-testid="stSidebar"] details {
+  border: 1px solid var(--border-subtle) !important;
+  border-radius: 8px !important;
+  background-color: var(--bg-surface) !important;
+}
+
+[data-testid="stSidebar"] [data-testid="stExpander"] summary {
+  color: var(--text-secondary) !important;
+  background-color: var(--bg-surface) !important;
+  font-family: var(--font-mono) !important;
+  font-size: 0.75rem !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+}
+
+[data-testid="stSidebar"] [data-testid="stExpander"] summary:hover {
+  color: var(--text-primary) !important;
+}
+
+[data-testid="stSidebar"] [data-testid="stExpander"] [data-testid="stExpanderDetails"] {
+  background-color: var(--bg-surface) !important;
+  color: var(--text-primary) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   BUTTONS & FILTER CHIPS THEMING (BUG 2 & BUG 5 FIX)
+═══════════════════════════════════════════════════════════════════ */
+/* All Streamlit native buttons across the main application */
+.main .stButton > button,
+.main button[kind="secondary"],
+.main button[kind="primary"] {
+  background-color: var(--chip-bg) !important;
+  color: var(--chip-text) !important;
+  border: 1px solid var(--chip-border) !important;
+  border-radius: 10px !important;
+  font-family: var(--font-gujarati), var(--font-body) !important;
+  font-size: 0.85rem !important;
+  font-weight: 500 !important;
+  padding: 0.45rem 0.85rem !important;
+  transition: all 0.15s ease !important;
+  box-shadow: var(--shadow) !important;
+}
+
+.main .stButton > button:hover {
+  background-color: var(--chip-active-bg) !important;
+  color: var(--chip-active-text) !important;
+  border-color: var(--chip-active-bg) !important;
+}
+
+/* Quick Action Chips */
+.quick-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--font-gujarati);
+  font-size: 0.9rem;
+  color: var(--chip-text);
+  background-color: var(--chip-bg);
+  border: 1px solid var(--chip-border);
+  padding: 0.5rem 1rem;
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+  box-shadow: var(--shadow);
+}
+
+.quick-chip:hover {
+  background-color: var(--chip-active-bg);
+  color: var(--chip-active-text);
+  border-color: var(--chip-active-bg);
+}
+
+/* Filter chips */
+.filter-chip {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font-gujarati), var(--font-body);
+  font-size: 0.8rem;
+  color: var(--chip-text);
+  border: 1px solid var(--chip-border);
+  background-color: var(--chip-bg);
+  padding: 0.3rem 0.75rem;
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.filter-chip-active {
+  color: var(--chip-active-text) !important;
+  background-color: var(--chip-active-bg) !important;
+  border-color: var(--chip-active-bg) !important;
+  font-weight: 600 !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   SEARCH INPUT & NATIVE INPUTS (BUG 3 FIX)
+═══════════════════════════════════════════════════════════════════ */
+/* Widget Labels */
+[data-testid="stWidgetLabel"] label,
+[data-testid="stWidgetLabel"] p,
+[data-testid="stWidgetLabel"] span {
+  color: var(--text-secondary) !important;
+  font-family: var(--font-gujarati), var(--font-body) !important;
+  font-size: 0.82rem !important;
+  font-weight: 600 !important;
+  margin-bottom: 0.35rem !important;
+}
+
+/* Text inputs, selectbox, textarea, chat input */
+[data-testid="stTextInput"] [data-baseweb="input"],
+[data-testid="stTextArea"] [data-baseweb="textarea"],
+[data-testid="stSelectbox"] [data-baseweb="select"] > div,
+[data-testid="stChatInput"] {
+  background-color: var(--input-bg) !important;
+  color: var(--input-text) !important;
+  border: 1px solid var(--input-border) !important;
+  border-radius: 10px !important;
+  box-shadow: var(--shadow) !important;
+}
+
+[data-testid="stTextInput"] input,
+[data-testid="stTextArea"] textarea,
+[data-testid="stChatInput"] textarea {
+  background-color: transparent !important;
+  color: var(--input-text) !important;
+  font-family: var(--font-gujarati), var(--font-body) !important;
+  font-size: 0.9rem !important;
+}
+
+[data-testid="stTextInput"] input::placeholder,
+[data-testid="stTextArea"] textarea::placeholder,
+[data-testid="stChatInput"] textarea::placeholder {
+  color: var(--input-placeholder) !important;
+}
+
+[data-testid="stTextInput"] [data-baseweb="input"]:focus-within,
+[data-testid="stSelectbox"] [data-baseweb="select"]:focus-within,
+[data-testid="stChatInput"]:focus-within {
+  border-color: var(--text-primary) !important;
+  box-shadow: 0 0 0 1px var(--text-primary) !important;
+}
+
+/* Dropdown popovers */
+[data-baseweb="popover"],
+[data-baseweb="menu"],
+ul[data-testid="stSelectboxVirtualDropdown"] {
+  background-color: var(--bg-surface) !important;
+  border: 1px solid var(--border-subtle) !important;
+  border-radius: 10px !important;
+  color: var(--text-primary) !important;
+  box-shadow: var(--shadow) !important;
+}
+
+li[data-baseweb="option"] {
+  background-color: var(--bg-surface) !important;
+  color: var(--text-primary) !important;
+}
+
+li[data-baseweb="option"]:hover,
+li[aria-selected="true"] {
+  background-color: var(--bg-elevated) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Radio buttons */
+[data-testid="stRadio"] label,
+[data-testid="stRadio"] [data-testid="stMarkdownContainer"] p {
+  color: var(--text-secondary) !important;
+  font-family: var(--font-gujarati), var(--font-body) !important;
+}
+
+/* Checkboxes */
+[data-testid="stCheckbox"] label,
+[data-testid="stCheckbox"] [data-testid="stMarkdownContainer"] p {
+  color: var(--text-secondary) !important;
+  font-family: var(--font-gujarati), var(--font-body) !important;
+}
+
+/* Main Area Expanders */
+.main [data-testid="stExpander"],
+.main details {
+  background-color: var(--bg-surface) !important;
+  border: 1px solid var(--border-subtle) !important;
+  border-radius: 12px !important;
+  box-shadow: var(--shadow) !important;
+}
+
+.main [data-testid="stExpander"] summary {
+  color: var(--text-primary) !important;
+  background-color: var(--bg-surface) !important;
+  font-family: var(--font-gujarati), var(--font-body) !important;
+}
+
+.main [data-testid="stExpander"] [data-testid="stExpanderDetails"] {
+  background-color: var(--bg-surface) !important;
+  color: var(--text-primary) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   CARDS, CHAT BUBBLES & HEADERS (HIGH CONTRAST BUG 4 FIX)
+═══════════════════════════════════════════════════════════════════ */
+/* Section Headers */
+.section-header {
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: 1rem;
+  margin-bottom: 1.5rem;
+}
+.section-header h2 {
+  font-family: var(--font-heading);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 0.25rem 0;
+}
+.section-header p {
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+/* Generic Kisaan Card */
+.kisaan-card {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 16px;
+  padding: 1.25rem;
+  box-shadow: var(--shadow);
+}
+
+/* Scheme Card */
+.scheme-card {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 16px;
+  padding: 1.25rem;
+  margin-bottom: 1rem;
+  transition: border-color 0.15s ease;
+  box-shadow: var(--shadow);
+}
+.scheme-card:hover {
+  border-color: var(--text-secondary);
+}
+.scheme-benefit-hero {
+  font-family: var(--font-mono);
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin: 0.5rem 0;
+}
+
+/* Crop subsection header */
+.crop-subsection-header {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+  padding-bottom: 0.35rem;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+/* Stat Cards */
+.stat-card {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 16px;
+  padding: 1.25rem;
+  text-align: center;
+  box-shadow: var(--shadow);
+}
+.stat-card-label {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  margin-bottom: 0.35rem;
+}
+.stat-card-value {
+  font-family: var(--font-mono);
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1;
+}
+.stat-card-unit {
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  margin-top: 0.25rem;
+}
+
+/* AQI severity indicators */
+.aqi-good    { border-color: var(--border-subtle) !important; }
+.aqi-moderate{ border-width: 2px !important; }
+.aqi-unhealthy{ border-width: 3px !important; }
+.aqi-hazardous{ border-width: 3px !important; border-style: dashed !important; }
+
+/* 5-day forecast */
+.forecast-strip {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
+}
+.forecast-day-card {
+  flex: 0 0 calc(20% - 0.5rem);
+  min-width: 80px;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  padding: 0.75rem 0.5rem;
+  text-align: center;
+  box-shadow: var(--shadow);
+}
+.forecast-day-name {
+  font-family: var(--font-gujarati);
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  margin-bottom: 0.35rem;
+}
+.forecast-temp {
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.forecast-rain {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  margin-top: 0.25rem;
+}
+
+/* Chat Bubbles */
+.chat-bubble-user {
+  background-color: var(--inverted-surface);
+  color: var(--inverted-text);
+  border-radius: 18px 18px 4px 18px;
+  padding: 1rem 1.25rem;
+  max-width: 82%;
+  margin-left: auto;
+  font-family: var(--font-gujarati);
+  font-size: 1.05rem;
+  line-height: 1.65;
+  box-shadow: var(--shadow);
+}
+
+.chat-bubble-ai {
+  background-color: var(--bg-elevated);
+  color: var(--text-primary);
+  border: 1px solid var(--border-subtle);
+  border-radius: 18px 18px 18px 4px;
+  padding: 1.25rem;
+  max-width: 88%;
+  margin-right: auto;
+  font-family: var(--font-gujarati);
+  font-size: 1.05rem;
+  line-height: 1.65;
+  box-shadow: var(--shadow);
+}
+
+/* Intent Pills & Source Chips */
+.intent-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  padding: 0.2rem 0.55rem;
+  border-radius: 9999px;
+  margin-bottom: 0.5rem;
+}
+
+.source-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: var(--font-mono);
+  font-size: 0.725rem;
+  color: var(--text-secondary);
+  background-color: var(--bg-primary);
+  border: 1px dashed var(--border-subtle);
+  padding: 0.3rem 0.65rem;
+  border-radius: 8px;
+  margin-top: 0.75rem;
+}
+
+/* Mic Button & Ring */
+.mic-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+}
+
+.mic-button-ring {
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  border: 2px solid var(--text-primary);
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.mic-button-ring:hover {
+  background-color: var(--inverted-surface);
+  color: var(--inverted-text);
+}
+
+.mic-button-recording {
+  background-color: var(--inverted-surface);
+  color: var(--inverted-text);
+  animation: pulse-ring 1.5s infinite;
+}
+
+@keyframes pulse-ring {
+  0% {
+    box-shadow: 0 0 0 0 var(--mic-ring-shadow);
+  }
+  70% {
+    box-shadow: 0 0 0 16px rgba(0, 0, 0, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
+  }
+}
+
+/* Skeleton Loading Animation */
+.skeleton-box {
+  background: linear-gradient(90deg, var(--skeleton-start) 25%, var(--skeleton-mid) 50%, var(--skeleton-start) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 8px;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Trace Debug Panel */
+.trace-panel {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  padding: 1rem;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  box-shadow: var(--shadow);
+}
+
+.trace-label {
+  color: var(--text-muted);
+  text-transform: uppercase;
+  font-size: 0.675rem;
+  letter-spacing: 0.05em;
+  margin-bottom: 2px;
+}
+
+/* Coming soon / beta shell */
+.coming-soon-shell {
+  background-color: var(--bg-surface);
+  border: 1px dashed var(--border-subtle);
+  border-radius: 20px;
+  padding: 4rem 2rem;
+  text-align: center;
+  margin-top: 3rem;
+  box-shadow: var(--shadow);
+}
+
+/* Audio Player */
+audio {
+  border-radius: 9999px;
+  width: 100%;
+  filter: contrast(95%);
+}
+
+/* Scrollbars */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-primary); }
+::-webkit-scrollbar-thumb { background: var(--border-subtle); border-radius: 3px; }

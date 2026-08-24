@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+ENV/
+
+# Secrets & Local Config
+.streamlit/secrets.toml
+.env
+
+# Models & Weights
+/models/whisper/*
+/models/vosk/*
+/models/piper/*
+!/models/**/.gitkeep
+
+# Data & Database
+*.db
+*.sqlite
+*.sqlite3
+/data/pdfs/schemes/*
+/data/pdfs/crop_advisory/*
+/data/pdfs/general/*
+!/data/pdfs/**/.gitkeep
+
+# Operating System
+.DS_Store
+Thumbs.db

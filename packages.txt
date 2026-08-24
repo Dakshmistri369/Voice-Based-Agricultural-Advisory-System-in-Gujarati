@@ -1,0 +1,6 @@
+tesseract-ocr
+tesseract-ocr-guj
+tesseract-ocr-eng
+ffmpeg
+espeak-ng
+libsndfile1

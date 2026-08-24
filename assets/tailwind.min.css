@@ -1,0 +1,19 @@
+/* Minimal local tailwind fallback declarations consuming token variables */
+*, ::before, ::after { box-sizing: border-box; border-width: 0; border-style: solid; border-color: var(--border-subtle); }
+html { line-height: 1.5; -webkit-text-size-adjust: 100%; font-family: 'Noto Sans Gujarati', sans-serif; }
+body { margin: 0; line-height: inherit; background-color: var(--bg-primary); color: var(--text-primary); }
+.bg-black { background-color: var(--bg-primary); }
+.bg-surface { background-color: var(--bg-surface); }
+.bg-elevated { background-color: var(--bg-elevated); }
+.border-hairline { border-color: var(--border-subtle); }
+.text-primary { color: var(--text-primary); }
+.text-secondary { color: var(--text-secondary); }
+.text-muted { color: var(--text-muted); }
+.rounded-xl { border-radius: 0.75rem; }
+.rounded-2xl { border-radius: 1rem; }
+.p-4 { padding: 1rem; }
+.p-6 { padding: 1.5rem; }
+.flex { display: flex; }
+.items-center { align-items: center; }
+.justify-between { justify-content: space-between; }
+.gap-4 { gap: 1rem; }

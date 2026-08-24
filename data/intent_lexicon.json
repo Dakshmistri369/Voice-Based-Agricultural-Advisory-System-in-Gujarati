@@ -1,0 +1,37 @@
+{
+  "GREETING": {
+    "keywords_gujarati": ["નમસ્તે", "કેમ છો", "હેલ્લો", "હલો", "પ્રણામ", "સુપ્રભાત"],
+    "keywords_english": ["hello", "hi", "namaste", "good morning", "greetings", "hey"],
+    "anchor_phrases": ["નમસ્તે કિસાન મિત્ર", "કેમ છો સાહેબ", "hello sir"]
+  },
+  "SCHEME": {
+    "keywords_gujarati": ["યોજના", "પીએમ કિસાન", "સહાય", "સબસીડી", "સબસિડી", "સરકારી", "હપ્તો", "વીમો", "પાક વીમો", "ઇ-ખેડૂત", "સોઇલ હેલ્થ કાર્ડ", "કેસીસી"],
+    "keywords_english": ["scheme", "pm-kisan", "subsidy", "government", "installment", "insurance", "pmfby", "atma", "ikhedut", "kcc", "card"],
+    "keywords_gujlish": ["paisa", "male", "money", "rupees", "kitla", "form", "apply", "kisan"],
+    "anchor_phrases": ["PM-KISAN યોજનામાં કેટલા પૈસા મળે", "સરકારી યોજનાઓ ની માહિતી", "સબસીડી ક્યારે મળશે", "how to apply for farming scheme"]
+  },
+  "PRICE": {
+    "keywords_gujarati": ["ભાવ", "બજાર ભાવ", "એપીએમસી", "માર્કેટ યાડ", "યાર્ડ", "મણ", "રૂપિયા", "કપાસનો ભાવ", "જીરૂનો ભાવ", "મગફળીનો ભાવ"],
+    "keywords_english": ["price", "mandi", "apmc", "market price", "rate", "cost", "today price"],
+    "keywords_gujlish": ["bhav", "rate", "bajar", "yard", "mandi", "kitno"],
+    "anchor_phrases": ["આજે કપાસનો ભાવ કેટલો છે", "રાજકોટ માર્કેટિંગ યાડ નો ભાવ", "today cotton mandi price in rajkot"]
+  },
+  "WEATHER": {
+    "keywords_gujarati": ["હવામાન", "વરસાદ", "વાતાવરણ", "તાપમાન", "ભેજ", "પવન", "વાદળ", "આગાહી", "ગરમી", "ઝાકળ"],
+    "keywords_english": ["weather", "rain", "rainfall", "temperature", "humidity", "wind", "forecast", "cloud"],
+    "keywords_gujlish": ["varsad", "rain", "havaman", "tampman", "chomasu"],
+    "anchor_phrases": ["આવતીકાલે વરસાદ પડશે", "આજનું હવામાન કેવું રહેશે", "will it rain tomorrow in ahmedabad"]
+  },
+  "CROP_ADVICE": {
+    "keywords_gujarati": ["ખાતર", "વાવેતર", "બિયારણ", "સિંચાઈ", "ડોઝ", "માત્રા", "જમીન", "પાક", "ઉત્પાદન", "જંતુનાશક", "રોગ", "દવા", "છાંટવી"],
+    "keywords_english": ["fertilizer", "sowing", "seed", "irrigation", "dosage", "npk", "urea", "pest", "disease", "treatment", "crop"],
+    "keywords_gujlish": ["khatar", "dose", "dava", "spraying", "rog", "biyaran", "irrigation"],
+    "anchor_phrases": ["કપાસ માટે કેટલું ખાતર નાખવું", "મગફળીમાં રોગનું નિયંત્રણ", "what is NPK dosage for cotton"]
+  },
+  "DISEASE": {
+    "keywords_gujarati": ["ઈયળ", "ગેરુ", "છારો", "સુકારો", "કાળિયો", "જીવાત", "સૂચિત રોગ", "પાંદડા પીળા", "રોગ થયો છે"],
+    "keywords_english": ["disease", "fungus", "pest", "caterpillar", "blight", "wilt", "rust", "yellow leaf"],
+    "keywords_gujlish": ["eyal", "rog", "piya", "leaf spot"],
+    "anchor_phrases": ["પાંદડા પીળા પડી ગયા છે", "પાકમાં ઈયળનો ઉપદ્રવ", "leaf disease treatment"]
+  }
+}

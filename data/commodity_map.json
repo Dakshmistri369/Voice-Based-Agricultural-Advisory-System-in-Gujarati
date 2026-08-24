@@ -1,0 +1,62 @@
+{
+  "Cotton": {
+    "name_gujarati": "કપાસ",
+    "name_english": "Cotton",
+    "agmarknet_name": "Cotton",
+    "unit": "20 kg"
+  },
+  "Groundnut": {
+    "name_gujarati": "મગફળી",
+    "name_english": "Groundnut",
+    "agmarknet_name": "Groundnut",
+    "unit": "20 kg"
+  },
+  "Cumin": {
+    "name_gujarati": "જીરૂ",
+    "name_english": "Cumin",
+    "agmarknet_name": "Cummin Seed(Jeera)",
+    "unit": "20 kg"
+  },
+  "Castor": {
+    "name_gujarati": "દીવેલા",
+    "name_english": "Castor",
+    "agmarknet_name": "Castor Seed",
+    "unit": "20 kg"
+  },
+  "Wheat": {
+    "name_gujarati": "ઘઉં",
+    "name_english": "Wheat",
+    "agmarknet_name": "Wheat",
+    "unit": "20 kg"
+  },
+  "Onion": {
+    "name_gujarati": "ડુંગળી",
+    "name_english": "Onion",
+    "agmarknet_name": "Onion",
+    "unit": "20 kg"
+  },
+  "Potato": {
+    "name_gujarati": "બટાટા",
+    "name_english": "Potato",
+    "agmarknet_name": "Potato",
+    "unit": "20 kg"
+  },
+  "Paddy": {
+    "name_gujarati": "ડાંગર",
+    "name_english": "Paddy",
+    "agmarknet_name": "Paddy(Dhan)",
+    "unit": "20 kg"
+  },
+  "Sesame": {
+    "name_gujarati": "તલ",
+    "name_english": "Sesame",
+    "agmarknet_name": "Sesamum(Til,Gingelly,Till)",
+    "unit": "20 kg"
+  },
+  "Mustard": {
+    "name_gujarati": "રાઈ",
+    "name_english": "Mustard",
+    "agmarknet_name": "Mustard",
+    "unit": "20 kg"
+  }
+}
