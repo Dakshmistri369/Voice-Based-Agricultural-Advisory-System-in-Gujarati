@@ -9,7 +9,7 @@ font = "sans serif"
 showErrorDetails = false
 
 [ui]
-hideTopBar = true
+hideTopBar = false
 
 [server]
 headless = true

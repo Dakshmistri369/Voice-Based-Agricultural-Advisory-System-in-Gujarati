@@ -4,6 +4,12 @@ from ui.components import clean_html
 
 
 def render_disease_section():
+    col_back, _ = st.columns([1.3, 5])
+    with col_back:
+        if st.button("← પાછા ફરો", key="disease_section_back_btn", help="હોમ / મુખ્ય પેજ પર પાછા જાઓ", use_container_width=True):
+            st.session_state["active_section"] = "home"
+            st.rerun()
+
     st.markdown(clean_html("""
 <div class="coming-soon-shell">
     <div style="font-size:3rem;margin-bottom:1rem;">🐛</div>

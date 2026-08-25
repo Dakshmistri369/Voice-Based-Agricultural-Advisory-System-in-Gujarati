@@ -118,6 +118,8 @@ class DatabaseManager:
                 for chunk, emb in zip(chunks, embeddings):
                     rec = chunk.copy()
                     rec["embedding"] = emb.tolist()
+                    if "language" in rec and "detected_language" not in rec:
+                        rec["detected_language"] = rec.pop("language")
                     records.append(rec)
                 _ = client.table("document_chunks").insert(records).execute()
                 logger.info(f"Inserted {len(records)} records into Supabase.")

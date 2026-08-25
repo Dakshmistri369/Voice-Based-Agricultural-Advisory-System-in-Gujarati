@@ -775,3 +775,137 @@ audio {
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: var(--bg-primary); }
 ::-webkit-scrollbar-thumb { background: var(--border-subtle); border-radius: 3px; }
+
+/* ═══════════════════════════════════════════════════════════════════
+   BACK NAVIGATION & REVERSE RETURN BUTTONS
+   ═══════════════════════════════════════════════════════════════════ */
+button[key*="back_btn"],
+button[key*="back_home_btn"],
+.stButton > button:has(p:first-child:is(:contains("←"))),
+.stButton > button:has(div:first-child:is(:contains("←"))) {
+  background: var(--bg-surface) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-subtle) !important;
+  border-radius: 9999px !important;
+  font-family: var(--font-gujarati), var(--font-body) !important;
+  font-weight: 600 !important;
+  font-size: 0.82rem !important;
+  padding: 0.35rem 0.9rem !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.4rem !important;
+}
+
+button[key*="back_btn"]:hover,
+button[key*="back_home_btn"]:hover {
+  background: var(--bg-elevated) !important;
+  border-color: var(--text-primary) !important;
+  transform: translateX(-2px) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   PERMANENTLY VISIBLE & DOCKED LEFT SIDEBAR
+   ═══════════════════════════════════════════════════════════════════ */
+section[data-testid="stSidebar"],
+[data-testid="stSidebar"] {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  min-width: 280px !important;
+  max-width: 320px !important;
+  width: 280px !important;
+  transform: none !important;
+  margin-left: 0 !important;
+  background-color: var(--bg-surface) !important;
+  border-right: 1px solid var(--border-subtle) !important;
+  z-index: 100 !important;
+}
+
+section[data-testid="stSidebar"] > div:first-child,
+[data-testid="stSidebar"] > div:first-child {
+  background-color: var(--bg-surface) !important;
+  width: 280px !important;
+  min-width: 280px !important;
+}
+
+[data-testid="collapsedControl"] {
+  display: flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  z-index: 999999 !important;
+  color: var(--text-primary) !important;
+  background-color: var(--bg-surface) !important;
+  border: 1px solid var(--border-subtle) !important;
+  border-radius: 8px !important;
+  top: 0.75rem !important;
+  left: 0.75rem !important;
+  padding: 0.3rem 0.5rem !important;
+  transition: all 0.2s ease !important;
+}
+
+[data-testid="collapsedControl"]:hover {
+  background-color: var(--bg-elevated) !important;
+  border-color: var(--text-primary) !important;
+}
+
+[data-testid="collapsedControl"] svg {
+  fill: var(--text-primary) !important;
+  stroke: var(--text-primary) !important;
+}
+
+[data-testid="stSidebar"] [data-testid="stSidebarHeader"] {
+  background-color: var(--bg-surface) !important;
+}
+
+/* Nav Item Buttons in Sidebar */
+.nav-item-active button {
+  background-color: var(--inverted-surface) !important;
+  color: var(--inverted-text) !important;
+  border: 1px solid var(--inverted-surface) !important;
+  font-weight: 700 !important;
+  border-radius: 8px !important;
+}
+
+.nav-item-idle button {
+  background-color: transparent !important;
+  color: var(--text-secondary) !important;
+  border: 1px solid transparent !important;
+  border-radius: 8px !important;
+  font-weight: 500 !important;
+}
+
+.nav-item-idle button:hover {
+  background-color: var(--bg-elevated) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border-subtle) !important;
+}
+
+/* Top Section Pills */
+.top-nav-active button {
+  background-color: var(--inverted-surface) !important;
+  color: var(--inverted-text) !important;
+  border: 1px solid var(--inverted-surface) !important;
+  font-weight: 700 !important;
+  border-radius: 20px !important;
+  font-size: 0.8rem !important;
+  padding: 0.35rem 0.65rem !important;
+}
+
+.top-nav-idle button {
+  background-color: var(--bg-surface) !important;
+  color: var(--text-secondary) !important;
+  border: 1px solid var(--border-subtle) !important;
+  border-radius: 20px !important;
+  font-size: 0.8rem !important;
+  padding: 0.35rem 0.65rem !important;
+  font-weight: 500 !important;
+}
+
+.top-nav-idle button:hover {
+  background-color: var(--bg-elevated) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--text-primary) !important;
+}
+

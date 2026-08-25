@@ -17,6 +17,7 @@ except ImportError:
         fitz = None
 
 from core.ocr_service import ocr_service
+from core.font_converter import font_converter
 
 logger = logging.getLogger(__name__)
 
@@ -55,8 +56,12 @@ class PDFLoader:
                 extracted_text = page.get_text("text").strip()
                 is_ocr_used = False
 
-                # Fallback to OCR if extracted text length is below threshold
-                if len(extracted_text) < self.min_text_length_threshold:
+                # Auto-convert legacy Gujarati fonts if detected
+                if font_converter.is_legacy_encoded(extracted_text):
+                    extracted_text = font_converter.convert_to_unicode(extracted_text)
+
+                # Fallback to OCR if extracted text length is below threshold and OCR service is active
+                if len(extracted_text) < self.min_text_length_threshold and ocr_service.is_available:
                     logger.info(f"Page {page_idx} of {pdf_path.name} below threshold ({len(extracted_text)} chars). Triggering OCR.")
                     
                     # Render page at 300 DPI for optimal OCR accuracy

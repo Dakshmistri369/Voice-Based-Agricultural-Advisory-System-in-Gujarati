@@ -59,18 +59,20 @@ class PipelineOrchestrator:
         norm_query = transliterator.normalize_text(gu_transcript)
         stage_latencies["normalization_ms"] = int((time.time() - t_norm_start) * 1000)
 
-        # STAGE 4: Translation (gu -> en)
-        t_trans_start = time.time()
-        en_query = translator_service.translate_gu_to_en(norm_query)
-        stage_latencies["translate_gu_en_ms"] = int((time.time() - t_trans_start) * 1000)
-
-        # STAGE 5: Understanding (Intent Detection & Entity Extraction)
+        # STAGE 4: Understanding (Intent Detection & Entity Extraction on normalized query)
         t_und_start = time.time()
-        intent, confidence, evidence = intent_detector.detect_intent(norm_query, en_query)
+        intent, confidence, evidence = intent_detector.detect_intent(norm_query)
         entities = entity_extractor.extract_entities(norm_query)
         if selected_district and not entities.get("district"):
             entities["district"] = selected_district
         stage_latencies["understanding_ms"] = int((time.time() - t_und_start) * 1000)
+
+        # STAGE 5: Translation (gu -> en) — only if needed for RAG / general inquiries
+        t_trans_start = time.time()
+        en_query = norm_query
+        if intent in ["CROP_ADVICE", "SCHEME", "UNKNOWN"]:
+            en_query = translator_service.translate_gu_to_en(norm_query)
+        stage_latencies["translate_gu_en_ms"] = int((time.time() - t_trans_start) * 1000)
 
         # STAGE 6: Service Routing & Retrieval (PDF RAG or Live Weather / Price Data)
         t_ret_start = time.time()
@@ -101,14 +103,16 @@ class PipelineOrchestrator:
         else:
             # RAG Search over document_chunks PDF knowledge base
             doc_category = "scheme" if intent == "SCHEME" else ("crop_advisory" if intent == "CROP_ADVICE" else None)
+            # Try searching with query (bge-m3 handles multilingual query directly)
+            search_query = en_query if en_query != norm_query else norm_query
             is_context_found, context_text, sources, top_sim = rag_service.retrieve_context(
-                query_text=en_query,
+                query_text=search_query,
                 doc_category=doc_category
             )
             # If category-filtered search finds nothing, fallback to searching all PDF chunks
             if not is_context_found and doc_category is not None:
                 is_context_found, context_text, sources, top_sim = rag_service.retrieve_context(
-                    query_text=en_query,
+                    query_text=search_query,
                     doc_category=None
                 )
 
@@ -120,20 +124,24 @@ class PipelineOrchestrator:
             en_answer = "Hello! I am Gujarati Kisaan Mitra AI. How can I assist you with farming schemes, crop advice, weather, or market prices today?"
             gu_answer = "નમસ્તે ખેડૂત મિત્ર! હું ગુજરાતી કિસાન મિત્ર AI છું. આજે હું તમને સરકારી યોજનાઓ, પાક માર્ગદર્શન, હવામાન અથવા બજાર ભાવ વિશે કેવી રીતે મદદ કરી શકું?"
             val_meta = {"is_gujarati_script": True, "is_grounded": True}
+
+        elif intent == "PRICE" and price_card_data:
+            en_answer = f"Today's APMC Mandi Price for {price_card_data['commodity_en']} in {price_card_data['district_gu']} is Rs {price_card_data['modal_price']} per 20kg (Min: Rs {price_card_data['min_price']}, Max: Rs {price_card_data['max_price']})."
+            gu_answer = f"{price_card_data['district_gu']} APMC યાર્ડમાં આજે {price_card_data['commodity_gu']} નો બજાર ભાવ ₹{price_card_data['modal_price']} પ્રતિ મણ (20 kg) છે. (ન્યૂનતમ: ₹{price_card_data['min_price']}, મહત્તમ: ₹{price_card_data['max_price']})."
+            val_meta = {"is_gujarati_script": True, "is_grounded": True}
+
+        elif intent == "WEATHER" and weather_card_data:
+            advisories_str = " ".join(weather_card_data['advisories'])
+            en_answer = f"Live weather forecast for {weather_card_data['district_english']}: Temp {weather_card_data['temp_c']}°C, Condition: {weather_card_data['condition_gujarati']}, Humidity: {weather_card_data['humidity']}%. Advisories: {advisories_str}"
+            gu_answer = f"{weather_card_data['district_gujarati']} માં આજે તાપમાન {weather_card_data['temp_c']}°C અને {weather_card_data['condition_gujarati']} રહેશે. {advisories_str}"
+            val_meta = {"is_gujarati_script": True, "is_grounded": True}
+
         else:
             en_answer, gu_answer, val_meta = llm_service.generate_grounded_answer(
                 query_text=en_query,
                 context_text=context_text,
                 is_context_found=is_context_found
             )
-
-        # Override structured responses for Price & Weather cards for clarity
-        if intent == "PRICE" and price_card_data:
-            gu_answer = f"{price_card_data['district_gu']} APMC યાર્ડમાં આજે {price_card_data['commodity_gu']} નો બજાર ભાવ ₹{price_card_data['modal_price']} પ્રતિ મણ (20 kg) છે. (ન્યૂનતમ: ₹{price_card_data['min_price']}, મહત્તમ: ₹{price_card_data['max_price']})."
-
-        elif intent == "WEATHER" and weather_card_data:
-            advisories_str = " ".join(weather_card_data['advisories'])
-            gu_answer = f"{weather_card_data['district_gujarati']} માં આજે તાપમાન {weather_card_data['temp_c']}°C અને {weather_card_data['condition_gujarati']} રહેશે. {advisories_str}"
 
         stage_latencies["llm_generation_ms"] = int((time.time() - t_llm_start) * 1000)
 

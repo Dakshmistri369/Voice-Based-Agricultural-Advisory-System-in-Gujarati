@@ -24,10 +24,16 @@ def render_prices_section():
     """Full mandi price dashboard with commodity filters, sort toggle, and live/cache badges."""
     district = st.session_state.get("selected_district", "રાજકોટ")
 
-    # ── Section Header ────────────────────────────────
+    # ── Section Header with Back Navigation ───────────
+    col_back, col_title = st.columns([1.3, 5])
+    with col_back:
+        if st.button("← પાછા ફરો", key="prices_section_back_btn", help="હોમ / મુખ્ય પેજ પર પાછા જાઓ", use_container_width=True):
+            st.session_state["active_section"] = "home"
+            st.rerun()
+
     st.markdown(clean_html(f"""
 <div class="section-header">
-    <h2>💰 આજના બજાર ભાવ</h2>
+    <h2>💰 આજના બજાર ભાવ (Mandi Prices)</h2>
     <p>AGMARKNET APMC Prices · {district} APMC · Gujarat</p>
 </div>
 """), unsafe_allow_html=True)

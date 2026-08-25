@@ -85,6 +85,10 @@ class LLMService:
         english_answer = ""
         gujarati_answer = ""
 
+        # Check if context already has Gujarati script
+        gu_chars_in_ctx = len(re.findall(r"[\u0A80-\u0AFF]", context_text))
+        is_context_gujarati = gu_chars_in_ctx > 50
+
         # 1. Call HF Inference API if API Key is configured
         if settings.HF_API_KEY:
             try:
@@ -92,23 +96,28 @@ class LLMService:
             except Exception as e:
                 logger.warning(f"HF LLM API call failed: {e}")
 
-        # 2. Safety Fallback: Extract the most informative, non-boilerplate sentences from the context
+        # 2. Safety Fallback: Extract informative sentences from context
         if not english_answer or len(english_answer.strip()) < 20:
-            logger.info("Assembling grounded agricultural answer from retrieved context.")
-            english_answer = self._assemble_chunk_verbatim_answer(context_text, query_text)
+            extracted_sent = self._assemble_chunk_verbatim_answer(context_text, query_text)
+            if is_context_gujarati:
+                gujarati_answer = extracted_sent
+                english_answer = extracted_sent
+            else:
+                english_answer = extracted_sent
 
-        # 3. Translate answer to natural Gujarati
-        if strategy == "strategy_b":
-            gujarati_answer = english_answer
-        else:
-            gujarati_answer = translator_service.translate_en_to_gu(english_answer)
+        # 3. Translate answer to natural Gujarati if not already in Gujarati
+        if not gujarati_answer:
+            if strategy == "strategy_b" or is_context_gujarati:
+                gujarati_answer = english_answer
+            else:
+                gujarati_answer = translator_service.translate_en_to_gu(english_answer)
 
         # Ensure we have valid Gujarati script in response
         if not any('\u0A80' <= ch <= '\u0AFF' for ch in gujarati_answer):
             gujarati_answer = translator_service.translate_en_to_gu(english_answer)
 
         # Enforce Pesticide/Fertilizer Caution Sentence if dosage mentioned
-        if any(term in query_text.lower() or term in english_answer.lower() for term in ["fertilizer", "dose", "pesticide", "khatar", "ખાતર", "દવા"]):
+        if any(term in query_text.lower() or term in english_answer.lower() or term in gujarati_answer.lower() for term in ["fertilizer", "dose", "pesticide", "khatar", "ખાતર", "દવા"]):
             if AGRONOMIST_CAUTION_GUJARATI not in gujarati_answer:
                 gujarati_answer = f"{AGRONOMIST_CAUTION_GUJARATI} {gujarati_answer}"
 
@@ -118,7 +127,7 @@ class LLMService:
         return english_answer, gujarati_answer, validation_meta
 
     def _call_hf_chat_api(self, prompt: str) -> str:
-        """Queries Hugging Face Chat Model Inference Endpoint."""
+        """Queries Hugging Face Chat Model Inference Endpoint with fast 2.0s timeout."""
         api_url = f"https://api-inference.huggingface.co/models/{self.model_id}"
         headers = {"Authorization": f"Bearer {settings.HF_API_KEY}"}
         
@@ -132,7 +141,7 @@ class LLMService:
             }
         }
 
-        resp = requests.post(api_url, headers=headers, json=payload, timeout=8)
+        resp = requests.post(api_url, headers=headers, json=payload, timeout=2.0)
         if resp.status_code == 200:
             res_json = resp.json()
             if isinstance(res_json, list) and len(res_json) > 0:

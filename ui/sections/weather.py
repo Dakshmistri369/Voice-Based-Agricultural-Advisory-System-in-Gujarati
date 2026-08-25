@@ -15,11 +15,17 @@ def render_weather_section():
     """Full weather + AQI dashboard with farming advisory and TTS listen button."""
     district = st.session_state.get("selected_district", "રાજકોટ")
 
-    # ── Section Header ────────────────────────────────
+    # ── Section Header with Back Navigation ───────────
+    col_back, col_title = st.columns([1.3, 5])
+    with col_back:
+        if st.button("← પાછા ફરો", key="weather_section_back_btn", help="હોમ / મુખ્ય પેજ પર પાછા જાઓ", use_container_width=True):
+            st.session_state["active_section"] = "home"
+            st.rerun()
+
     st.markdown(clean_html(f"""
 <div class="section-header">
-    <h2>☔ હવામાન અને હવાની ગુણવત્તા</h2>
-    <p>Open-Meteo Live Forecast · {district} જિલ્લો</p>
+    <h2>☔ હવામાન અને હવાની ગુણવત્તા (AQI)</h2>
+    <p>Open-Meteo Live Forecast & CPCB Air Quality · {district} જિલ્લો</p>
 </div>
 """), unsafe_allow_html=True)
 
@@ -143,6 +149,7 @@ def render_weather_section():
         with st.spinner("ઓડિઓ તૈયાર…"):
             audio_bytes, engine = tts_service.synthesize_speech(full_advisory)
         if audio_bytes:
-            st.audio(audio_bytes, format="audio/wav")
+            from core.tts_service import detect_audio_mime_type
+            st.audio(audio_bytes, format=detect_audio_mime_type(audio_bytes))
         else:
             st.warning("TTS ઉપલબ્ધ નથી.")

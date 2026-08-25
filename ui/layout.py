@@ -73,9 +73,20 @@ def inject_theme_styles(theme: str = None):
         color: {tokens['text_primary']} !important;
     }}
 
-    [data-testid="stSidebar"], [data-testid="stSidebar"] > div:first-child {{
+    section[data-testid="stSidebar"],
+    [data-testid="stSidebar"],
+    [data-testid="stSidebar"] > div:first-child {{
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        min-width: 280px !important;
+        max-width: 320px !important;
+        width: 280px !important;
+        transform: none !important;
+        margin-left: 0 !important;
         background-color: {tokens['bg_surface']} !important;
         color: {tokens['text_primary']} !important;
+        border-right: 1px solid {tokens['border_subtle']} !important;
     }}
     """
 
@@ -100,6 +111,16 @@ def inject_theme_styles(theme: str = None):
     setTimeout(_applyTheme, 100);
     setTimeout(_applyTheme, 500);
     setTimeout(_applyTheme, 1500);
+    /* Helper to toggle Streamlit sidebar */
+    window.openStreamlitSidebar = function() {{
+      var btn = document.querySelector('[data-testid="collapsedControl"] button') ||
+                document.querySelector('[data-testid="collapsedControl"]') ||
+                document.querySelector('button[aria-label="Expand sidebar"]') ||
+                document.querySelector('button[data-testid="stSidebarCollapseButton"]');
+      if (btn) {{
+        btn.click();
+      }}
+    }};
     /* MutationObserver keeps newly injected elements themed */
     if (window.MutationObserver) {{
       new MutationObserver(_applyTheme).observe(document.body,

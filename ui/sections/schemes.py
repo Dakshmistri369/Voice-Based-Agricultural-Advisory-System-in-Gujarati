@@ -19,11 +19,17 @@ CATEGORY_LABELS = {
 def render_schemes_section():
     """Government scheme browser — semantic search + category filter + cards."""
 
-    # ── Section Header ────────────────────────────────
+    # ── Section Header with Back Navigation ───────────
+    col_back, col_title = st.columns([1.3, 5])
+    with col_back:
+        if st.button("← પાછા ફરો", key="schemes_section_back_btn", help="હોમ / મુખ્ય પેજ પર પાછા જાઓ", use_container_width=True):
+            st.session_state["active_section"] = "home"
+            st.rerun()
+
     st.markdown(clean_html("""
 <div class="section-header">
-    <h2>📄 સરકારી ખેત-યોજનાઓ</h2>
-    <p>PDF Corpus — Re-indexed scheme documents</p>
+    <h2>📄 સરકારી ખેત-યોજનાઓ (Govt Schemes)</h2>
+    <p>PDF Corpus — Re-indexed scheme documents & subsidies</p>
 </div>
 """), unsafe_allow_html=True)
 

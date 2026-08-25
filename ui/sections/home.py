@@ -5,6 +5,7 @@ Home / Voice Chat Section — renders the pipeline chat interface.
 import streamlit as st
 from config import settings
 from pipeline import pipeline
+from core.tts_service import detect_audio_mime_type
 from ui.theme import normalize_theme_name, get_theme_dict
 from ui.components import (
     clean_html,
@@ -91,9 +92,13 @@ def render_home_section():
     query_to_process = None
     is_audio_query = False
 
+    import hashlib
     if recorded_bytes:
-        query_to_process = recorded_bytes
-        is_audio_query = True
+        audio_hash = hashlib.md5(recorded_bytes).hexdigest()
+        if audio_hash != st.session_state.get("last_processed_audio_hash"):
+            query_to_process = recorded_bytes
+            is_audio_query = True
+            st.session_state["last_processed_audio_hash"] = audio_hash
     elif user_text_input:
         query_to_process = user_text_input
     elif quick_chip_selected:
@@ -120,7 +125,7 @@ def render_home_section():
                 st.session_state["last_trace"] = result.get("trace_data")
                 st.rerun()
             else:
-                st.error(result.get("error", "ભૂલ આવી છે."))
+                st.warning(result.get("error", "કોઈ અવાજ કે લખાણ ઓળખાયું નથી. કૃપા કરી ફરીથી બોલો અથવા ટાઇપ કરો."))
 
     # ── Conversation History ──────────────────────────
     for msg in st.session_state.get("messages", []):
@@ -164,7 +169,8 @@ def render_home_section():
         ), unsafe_allow_html=True)
 
         if msg.get("audio_bytes"):
-            st.audio(msg["audio_bytes"], format="audio/wav")
+            audio_mime = detect_audio_mime_type(msg["audio_bytes"])
+            st.audio(msg["audio_bytes"], format=audio_mime)
 
     # ── Pipeline Trace ────────────────────────────────
     if st.session_state.get("show_trace") and st.session_state.get("last_trace"):

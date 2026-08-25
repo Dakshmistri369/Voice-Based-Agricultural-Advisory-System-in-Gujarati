@@ -14,6 +14,10 @@ from typing import Dict, Any, List
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
 
+BASE_DIR_PATH = Path(__file__).resolve().parent
+if str(BASE_DIR_PATH) not in sys.path:
+    sys.path.insert(0, str(BASE_DIR_PATH))
+
 from config import settings, BASE_DIR
 from core.pdf_loader import pdf_loader
 from core.chunker import chunker
@@ -25,7 +29,7 @@ logger = logging.getLogger("PDF_Ingestion")
 
 
 def organize_root_pdfs():
-    """Moves any loose PDFs from the root folder into data/pdfs/ subfolders."""
+    """Organizes loose PDFs from root and data/pdfs/ into structured subfolders."""
     root_dir = BASE_DIR
     target_crop = settings.PDF_DIR / "crop_advisory"
     target_scheme = settings.PDF_DIR / "schemes"
@@ -35,34 +39,46 @@ def organize_root_pdfs():
     target_scheme.mkdir(parents=True, exist_ok=True)
     target_general.mkdir(parents=True, exist_ok=True)
 
+    # 1. Check root directory
     for pdf_file in root_dir.glob("*.pdf"):
-        filename_lower = pdf_file.name.lower()
-        if "એગ્રીકલ્ચર" in pdf_file.name or "crop" in filename_lower or "book" in filename_lower:
-            dest = target_crop / pdf_file.name
-        elif "scheme" in filename_lower or "kisan" in filename_lower or "yojana" in filename_lower:
-            dest = target_scheme / pdf_file.name
-        else:
-            dest = target_general / pdf_file.name
-
-        logger.info(f"Organizing loose PDF '{pdf_file.name}' -> {dest.relative_to(root_dir)}")
+        cat = determine_category(pdf_file)
+        dest_dir = target_scheme if cat == "scheme" else (target_crop if cat == "crop_advisory" else target_general)
+        dest = dest_dir / pdf_file.name
+        logger.info(f"Organizing root PDF '{pdf_file.name}' -> {dest.relative_to(root_dir)}")
         shutil.copy2(pdf_file, dest)
+
+    # 2. Check loose PDFs directly under data/pdfs/
+    for pdf_file in settings.PDF_DIR.glob("*.pdf"):
+        cat = determine_category(pdf_file)
+        dest_dir = target_scheme if cat == "scheme" else (target_crop if cat == "crop_advisory" else target_general)
+        dest = dest_dir / pdf_file.name
+        logger.info(f"Organizing loose PDF '{pdf_file.name}' -> {dest.relative_to(root_dir)}")
+        shutil.move(str(pdf_file), str(dest))
 
 
 def determine_category(pdf_path: Path) -> str:
-    """Determines document category from folder location or filename."""
+    """Determines document category from folder location or filename heuristics."""
     parent_name = pdf_path.parent.name.lower()
     if parent_name in ["schemes", "scheme"]:
         return "scheme"
     elif parent_name in ["crop_advisory", "crop", "advisory"]:
         return "crop_advisory"
-    else:
-        # Check filename heuristics
-        fname = pdf_path.name.lower()
-        if "scheme" in fname or "yojana" in fname or "kisan" in fname:
-            return "scheme"
-        elif " crop" in fname or "એગ્રીકલ્ચર" in fname or "advisory" in fname:
-            return "crop_advisory"
-        return "general"
+
+    # Check filename heuristics
+    fname = pdf_path.name.lower()
+    if "scheme" in fname or "yojana" in fname or "kisan" in fname or "pmkisan" in fname:
+        return "scheme"
+    elif (
+        "crop" in fname
+        or "એગ્રીકલ્ચર" in fname
+        or "advisory" in fname
+        or "krushi" in fname
+        or "agriculture" in fname
+        or "viewfile" in fname
+        or "jess104" in fname
+    ):
+        return "crop_advisory"
+    return "general"
 
 
 def run_pdf_ingestion() -> Dict[str, Any]:

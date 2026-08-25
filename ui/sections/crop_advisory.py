@@ -31,7 +31,13 @@ SUBSECTIONS = [
 def render_crop_advisory_section():
     """Crop-specific advisory — shows RAG results for selected crop across subsections."""
 
-    # ── Section Header ────────────────────────────────
+    # ── Section Header with Back Navigation ───────────
+    col_back, col_title = st.columns([1.3, 5])
+    with col_back:
+        if st.button("← પાછા ફરો", key="crop_section_back_btn", help="હોમ / મુખ્ય પેજ પર પાછા જાઓ", use_container_width=True):
+            st.session_state["active_section"] = "home"
+            st.rerun()
+
     st.markdown(clean_html("""
 <div class="section-header">
     <h2>🌱 પાક સલાહ (Crop Advisory)</h2>
@@ -109,7 +115,8 @@ def render_crop_advisory_section():
         with st.spinner("ઓડિઓ…"):
             audio_bytes, engine = tts_service.synthesize_speech(full_text[:1500])
         if audio_bytes:
-            st.audio(audio_bytes, format="audio/wav")
+            from core.tts_service import detect_audio_mime_type
+            st.audio(audio_bytes, format=detect_audio_mime_type(audio_bytes))
         else:
             st.warning("TTS ઉપલબ્ધ નથી.")
 

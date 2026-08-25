@@ -136,7 +136,7 @@ class TranslatorService:
             "parameters": {"src_lang": src_lang, "tgt_lang": tgt_lang}
         }
 
-        resp = requests.post(api_url, headers=headers, json=payload, timeout=5)
+        resp = requests.post(api_url, headers=headers, json=payload, timeout=1.5)
         if resp.status_code == 200:
             res_json = resp.json()
             if isinstance(res_json, list) and len(res_json) > 0:
