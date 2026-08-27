@@ -1,6 +1,6 @@
 """
 UI Component HTML Builders for Gujarati Kisaan Mitra AI.
-Supports dual Monochrome Aesthetic: Black & White Themes via Central Token System.
+Green Theme + Dark/Light support. All panel builder functions live here.
 """
 
 import re
@@ -8,339 +8,549 @@ from typing import Dict, List, Optional, Any
 
 
 def clean_html(html_str: str) -> str:
-    """Removes all leading/trailing line whitespace to prevent Streamlit markdown from creating code blocks."""
+    """Removes leading/trailing line whitespace to prevent Streamlit markdown code blocks."""
     lines = [line.strip() for line in html_str.splitlines() if line.strip()]
     return "".join(lines)
 
 
-def render_header(
-    stt_status: str = "Whisper-API",
-    tts_status: str = "Piper-TTS",
-    llm_status: str = "Qwen2.5-7B"
-) -> str:
-    """Renders the top monochrome header with title, Gujarati tagline, and service status indicators."""
-    raw_html = f"""
-<div class="border-b pb-4 mb-6" style="border-color: var(--border-subtle);">
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div>
-            <h1 class="text-3xl font-bold font-['Space_Grotesk'] tracking-tight" style="color: var(--text-primary);">
-                ગુજરાતી કિસાન મિત્ર AI
-            </h1>
-            <p class="text-xs sm:text-sm font-['Noto_Sans_Gujarati'] mt-1" style="color: var(--text-secondary);">
-                દસ્તાવેજ-આધારિત અવાજ ખેતી માર્ગદર્શક (Voice-Based PDF Agricultural Advisory)
-            </p>
-        </div>
-        <div class="flex items-center gap-3 text-xs font-mono" style="color: var(--text-secondary);">
-            <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-full" style="border: 1px solid var(--border-subtle); background-color: var(--bg-surface);">
-                <span class="w-1.5 h-1.5 rounded-full animate-pulse" style="background-color: var(--text-primary);"></span>
-                <span>STT: {stt_status}</span>
-            </div>
-            <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-full" style="border: 1px solid var(--border-subtle); background-color: var(--bg-surface);">
-                <span class="w-1.5 h-1.5 rounded-full" style="background-color: var(--text-primary);"></span>
-                <span>TTS: {tts_status}</span>
-            </div>
-            <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-full" style="border: 1px solid var(--border-subtle); background-color: var(--bg-surface);">
-                <span class="w-1.5 h-1.5 rounded-full" style="background-color: var(--text-primary);"></span>
-                <span>LLM: {llm_status}</span>
-            </div>
-        </div>
+# ── Panel Badge ───────────────────────────────────────────────────
+def panel_badge(number: str, label: str) -> str:
+    return clean_html(f"""
+<div style="margin-bottom:0.5rem;">
+  <span style="display:inline-flex;align-items:center;gap:0.3rem;
+    background:var(--accent);color:#fff;font-family:'Inter',sans-serif;
+    font-size:0.68rem;font-weight:700;letter-spacing:0.02em;
+    padding:0.18rem 0.55rem;border-radius:6px;">
+    {number}. {label}
+  </span>
+</div>""")
+
+
+# ── Home Info Bar ─────────────────────────────────────────────────
+def render_home_info_bar(temp_c, price_val, crop_label) -> str:
+    return clean_html(f"""
+<div style="display:flex;gap:0.5rem;margin-bottom:0.7rem;">
+  <div style="flex:1;background:var(--bg-elevated);border:1px solid var(--border-subtle);
+      border-radius:10px;padding:0.45rem 0.55rem;text-align:center;">
+    <div style="font-family:'JetBrains Mono',monospace;font-size:0.55rem;text-transform:uppercase;
+        letter-spacing:0.05em;color:var(--text-muted);margin-bottom:0.1rem;">હવામાન</div>
+    <div style="font-family:'JetBrains Mono',monospace;font-size:1rem;font-weight:800;
+        color:var(--text-primary);">☀️ {temp_c}°C</div>
+    <div style="font-family:'Noto Sans Gujarati',sans-serif;font-size:0.58rem;color:var(--text-muted);
+        margin-top:0.1rem;">સૂર્ય, હળવો ઘટાટોપ</div>
+  </div>
+  <div style="flex:1;background:var(--bg-elevated);border:1px solid var(--border-subtle);
+      border-radius:10px;padding:0.45rem 0.55rem;text-align:center;">
+    <div style="font-family:'JetBrains Mono',monospace;font-size:0.55rem;text-transform:uppercase;
+        letter-spacing:0.05em;color:var(--text-muted);margin-bottom:0.1rem;">બજાર ભાવ</div>
+    <div style="font-family:'JetBrains Mono',monospace;font-size:1rem;font-weight:800;
+        color:var(--text-primary);">₹ {price_val}</div>
+    <div style="font-family:'Noto Sans Gujarati',sans-serif;font-size:0.58rem;color:var(--text-muted);
+        margin-top:0.1rem;">ક્વિ./પ્રતિ ક્વિન્ટલ</div>
+  </div>
+  <div style="flex:1;background:var(--bg-elevated);border:1px solid var(--border-subtle);
+      border-radius:10px;padding:0.45rem 0.55rem;text-align:center;">
+    <div style="font-family:'JetBrains Mono',monospace;font-size:0.55rem;text-transform:uppercase;
+        letter-spacing:0.05em;color:var(--text-muted);margin-bottom:0.1rem;">પાક સલાહ</div>
+    <div style="font-family:'Noto Sans Gujarati',sans-serif;font-size:0.9rem;font-weight:800;
+        color:var(--text-primary);">{crop_label}</div>
+    <div style="font-family:'Noto Sans Gujarati',sans-serif;font-size:0.58rem;color:var(--text-muted);
+        margin-top:0.1rem;">પાણી આપવું જરૂરી</div>
+  </div>
+</div>""")
+
+
+# ── Voice Assistant Panel ─────────────────────────────────────────
+def render_voice_panel() -> str:
+    bars = "".join(
+        f'<div class="waveform-bar"></div>' for _ in range(10)
+    )
+    return clean_html(f"""
+<div class="voice-panel-center" style="padding:0.3rem 0;">
+  <div class="voice-panel-title">કિસાન મિત્ર AI</div>
+  <div class="waveform" style="justify-content:center;">{bars}</div>
+  <div style="width:68px;height:68px;border-radius:50%;background:var(--accent);
+      color:#fff;display:flex;align-items:center;justify-content:center;
+      font-size:1.7rem;margin:0.4rem auto;
+      box-shadow:0 4px 16px var(--mic-ring-shadow);">🎤</div>
+  <div class="voice-hint">સાંભળું છું… બોલો</div>
+  <div class="voice-example">ઉદાહ.: "મગફળીમાં પીળાશ શા માટે આવે છે?"</div>
+  <div class="lang-pill" style="margin:0.4rem auto;display:inline-flex;">
+    <span>🇮🇳</span><span>ગુજરાતી</span><span style="color:var(--text-muted);">▾</span>
+  </div>
+</div>""")
+
+
+# ── Answer Panel ─────────────────────────────────────────────────
+def render_answer_panel(answer_text: str = "", bullets: list = None, sources: list = None) -> str:
+    if not answer_text:
+        answer_text = "અહીં AI નો જવાબ દેખાશે. ઉપર માઇક દબાવીને બોલો."
+    if bullets is None:
+        bullets = ["યોગ્ય ખાતર આપો (યુરિયા)", "પાણીનું નીકળવું સુનિશ્ચિત કરો", "પાંડડાનું ફૂગનાશક છિટકાવ કરો"]
+    if sources is None:
+        sources = [
+            ("કૃષિ યુનિ. માર્ગદર્શન PDF", "PDF"),
+            ("ICAR મગફળી પાક માર્ગદર્શન", "PDF"),
+            ("કૃષિ નિષ્ણાત સલાહ", "Web"),
+        ]
+    bullets_html = "".join(
+        f'<div class="answer-bullet">{b}</div>' for b in bullets
+    )
+    sources_html = "".join(
+        f"""<div class="source-row">
+          <span style="font-family:'Noto Sans Gujarati',sans-serif;font-size:0.7rem;color:var(--text-secondary);">{i+1}. {name}</span>
+          <span class="source-badge {'source-badge-web' if t=='Web' else ''}">{t}</span>
+        </div>""" for i, (name, t) in enumerate(sources)
+    )
+    return clean_html(f"""
+<div>
+  <div class="answer-section-title">જવાબ</div>
+  <div class="answer-text">{answer_text}</div>
+  <div style="font-family:'Noto Sans Gujarati',sans-serif;font-size:0.72rem;
+      color:var(--text-muted);text-transform:uppercase;letter-spacing:0.04em;
+      margin-bottom:0.3rem;">સૂચનો:</div>
+  {bullets_html}
+  <div class="sources-section">
+    <div style="font-family:'JetBrains Mono',monospace;font-size:0.62rem;text-transform:uppercase;
+        letter-spacing:0.05em;color:var(--text-muted);margin-bottom:0.25rem;">
+      સંદર્ભ સ્ત્રોત (Sources)
     </div>
-</div>
-"""
-    return clean_html(raw_html)
+    {sources_html}
+  </div>
+</div>""")
+
+
+# ── Crop Advisory Panel ───────────────────────────────────────────
+def render_crop_panel_mini(selected_crop: str = "groundnut") -> str:
+    crops = [
+        ("cotton",    "🌿", "કપાસ"),
+        ("groundnut", "🥜", "મગફળી"),
+        ("wheat",     "🌾", "ઘઉં"),
+        ("pigeon",    "🫘", "તુવેર"),
+        ("sorghum",   "🌽", "જ્વાર"),
+    ]
+    tabs_html = ""
+    for cid, icon, lbl in crops:
+        active_cls = "crop-tab-active" if cid == selected_crop else ""
+        tabs_html += f"""<div class="crop-tab {active_cls}">
+          <span class="crop-tab-icon">{icon}</span>
+          <span class="crop-tab-label">{lbl}</span>
+        </div>"""
+
+    # advisory per crop
+    advisories = {
+        "cotton":    ["પાણી આપવાનો ચાલુ રાખો", "તીડનું નિયંત્રણ કરો", "20:20:00 ખાતર 40 કિ./હ. આપો"],
+        "groundnut": ["પાણી આપવાનો ચાલુ રાખો", "ફૂગ નિયંત્રણ", "DAP 50 કિ./હ. આપો"],
+        "wheat":     ["ઠંડા હવામાનમાં સિંચાઈ", "રસ્ટ નિયંત્રણ", "યુરિયા 40 કિ./હ."],
+        "pigeon":    ["સૂકો ચોમાસો", "AFB નિયંત્રણ", "SSP 30 કિ./હ."],
+        "sorghum":   ["ઓછું પાણી", "ઈયળ નિયંત્રણ", "NPK 20:20:0"],
+    }
+    adv = advisories.get(selected_crop, advisories["groundnut"])
+    checks = "".join(
+        f'<div class="crop-check-row"><span class="crop-check-icon">✓</span><span>{a}</span></div>'
+        for a in adv
+    )
+    crop_name = next((lbl for cid, _, lbl in crops if cid == selected_crop), "મગફળી")
+    return clean_html(f"""
+<div>
+  <div class="crop-tab-strip">{tabs_html}</div>
+  <div class="crop-advisory-title">{crop_name} માટે સલાહ</div>
+  {checks}
+</div>""")
+
+
+# ── Weather Panel ─────────────────────────────────────────────────
+def render_weather_panel_mini(district: str, temp_c, humidity, wind_speed,
+                               condition_gu: str, forecast_days: list,
+                               alert_text: str = "") -> str:
+    forecast_html = ""
+    for day in forecast_days[:3]:
+        rain_mm = day.get("rain_mm", 0)
+        rain_str = f"🌧️{rain_mm}mm" if rain_mm > 0.5 else "☀️"
+        forecast_html += f"""<div class="forecast-mini-item">
+          <div class="forecast-mini-day">{day.get('day_gu','')}</div>
+          <div class="forecast-mini-temp">{day.get('temp_max','--')}°/{day.get('temp_min','--')}°</div>
+          <div class="forecast-mini-rain">{rain_str}</div>
+        </div>"""
+
+    alert_html = ""
+    if alert_text:
+        alert_html = f"""<div class="weather-alert-banner">
+          <span class="weather-alert-icon">⚠️</span>
+          <span>{alert_text}</span>
+        </div>"""
+
+    return clean_html(f"""
+<div>
+  <div class="weather-location">📍 {district}, ગુજરાત</div>
+  <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:0.2rem;">
+    <div class="weather-temp-hero">☀️ {temp_c}°C</div>
+  </div>
+  <div class="weather-condition">{condition_gu}</div>
+  <div class="weather-stats">
+    <div class="weather-stat-item">💧 {humidity}%</div>
+    <div class="weather-stat-item">🌬️ {wind_speed} km/h</div>
+    <div class="weather-stat-item">🌧️ 0%</div>
+  </div>
+  <div class="forecast-mini">{forecast_html}</div>
+  {alert_html}
+</div>""")
+
+
+# ── Market Prices Panel ───────────────────────────────────────────
+def render_price_table_mini(rows: list) -> str:
+    """rows = list of (crop_gu, market, price, change_pct, up: bool)"""
+    rows_html = ""
+    for crop_gu, market, price, change, up in rows:
+        arrow = "▲" if up else "▼"
+        cls   = "price-change-up" if up else "price-change-down"
+        rows_html += f"""<tr>
+          <td style="font-family:'Noto Sans Gujarati',sans-serif;">{crop_gu}</td>
+          <td style="font-family:'Noto Sans Gujarati',sans-serif;color:var(--text-secondary);">{market}</td>
+          <td style="font-family:'JetBrains Mono',monospace;font-weight:700;">{price}</td>
+          <td class="{cls}">{arrow} {change}</td>
+        </tr>"""
+    return clean_html(f"""
+<div>
+  <table class="price-table" style="width:100%;">
+    <thead>
+      <tr>
+        <th>પાક</th>
+        <th>બજાર</th>
+        <th>ભાવ (₹/ક્વિ.)</th>
+        <th>પરિવર્તન</th>
+      </tr>
+    </thead>
+    <tbody>{rows_html}</tbody>
+  </table>
+</div>""")
+
+
+# ── Soil Test Panel ───────────────────────────────────────────────
+def render_soil_panel_mini(ph: float, n_level: str, p_level: str, k_level: str,
+                            recs: list) -> str:
+    p_cls = "soil-stat-warning" if p_level == "ઓછું" else ""
+    recs_html = "".join(
+        f'<div class="soil-rec-bullet">{r}</div>' for r in recs
+    )
+    return clean_html(f"""
+<div>
+  <div class="soil-panel-title">માટી તપાસ</div>
+  <div class="soil-stats-row">
+    <div class="soil-stat">
+      <div class="soil-stat-label">pH</div>
+      <div class="soil-stat-value">{ph}</div>
+      <div class="soil-stat-sub">સારો</div>
+    </div>
+    <div class="soil-stat">
+      <div class="soil-stat-label">નાઇટ્રોજન (N)</div>
+      <div class="soil-stat-value">{n_level}</div>
+      <div class="soil-stat-sub">મધ્યમ</div>
+    </div>
+    <div class="soil-stat">
+      <div class="soil-stat-label">ફોસ્ફરસ (P)</div>
+      <div class="soil-stat-value {p_cls}">{p_level}</div>
+      <div class="soil-stat-sub" style="{'color:var(--price-down);' if p_level=='ઓછું' else ''}">{'ઓછું' if p_level=='ઓછું' else 'ઠીક'}</div>
+    </div>
+    <div class="soil-stat">
+      <div class="soil-stat-label">પોટાસ (K)</div>
+      <div class="soil-stat-value">{k_level}</div>
+      <div class="soil-stat-sub">સારો</div>
+    </div>
+  </div>
+  <div class="soil-rec-title">સૂચન</div>
+  {recs_html}
+</div>""")
+
+
+# ── Government Schemes Panel ──────────────────────────────────────
+def render_schemes_panel_mini(schemes: list) -> str:
+    """schemes = list of (icon, name, sub, section_key)"""
+    cards_html = ""
+    for icon, name, sub, _ in schemes:
+        cards_html += f"""<div class="scheme-mini-card">
+          <div class="scheme-mini-icon">{icon}</div>
+          <div>
+            <div class="scheme-mini-name">{name}</div>
+            <div class="scheme-mini-sub">{sub}</div>
+          </div>
+          <div class="scheme-mini-btn">વધુ જાણો →</div>
+        </div>"""
+    return clean_html(f"<div>{cards_html}</div>")
+
+
+# ── History Panel ─────────────────────────────────────────────────
+def render_history_panel_mini(messages: list) -> str:
+    if not messages:
+        return clean_html("""
+<div class="history-empty">
+  <div style="font-size:1.5rem;margin-bottom:0.4rem;">📭</div>
+  <div>હજુ કોઈ પ્રશ્ન પૂછ્યો નથી</div>
+</div>""")
+
+    import datetime
+    items_html = ""
+    for i, msg in enumerate(reversed(messages[-5:])):
+        q = msg.get("gu_transcript", "")[:40]
+        if not q:
+            continue
+        t = f"આજે, {datetime.datetime.now().strftime('%I:%M %p')}" if i == 0 else (
+            "ગઈકાલ, 4:15 PM" if i == 1 else f"{i+1} દિ. પહેલ"
+        )
+        items_html += f"""<div class="history-item">
+          <div class="history-item-q">{q}{'…' if len(msg.get('gu_transcript','')) > 40 else ''}</div>
+          <div class="history-item-time">{t}</div>
+          <div class="history-arrow">›</div>
+        </div>"""
+    return clean_html(f"<div>{items_html}</div>")
+
+
+# ── Feature Footer ────────────────────────────────────────────────
+def render_feature_footer() -> str:
+    features = [
+        ("➕", "Large Buttons"),
+        ("🎤", "Voice First"),
+        ("🇮🇳", "Local Language (Gujarati)"),
+        ("📶", "Offline Support"),
+        ("📱", "Mobile Responsive"),
+        ("🌙", "Dark/Light Mode"),
+        ("✨", "Simple Icons"),
+    ]
+    badges = "".join(
+        f'<div class="feature-badge"><span class="feature-badge-icon">{i}</span><span>{l}</span></div>'
+        for i, l in features
+    )
+    return clean_html(f'<div class="feature-footer">{badges}</div>')
+
+
+# ── Legacy components (kept for full-page sections) ───────────────
+
+def render_header(stt_status="Whisper-API", tts_status="Piper-TTS", llm_status="Qwen2.5-7B") -> str:
+    return clean_html(f"""
+<div style="border-bottom:1px solid var(--border-subtle);padding-bottom:0.75rem;margin-bottom:1rem;">
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.5rem;">
+    <div>
+      <h1 style="font-family:'Space Grotesk',sans-serif;font-size:1.5rem;font-weight:700;
+          color:var(--text-primary);margin:0 0 0.2rem 0;">ગુજરાતી કિસાન મિત્ર AI</h1>
+      <p style="font-family:'Noto Sans Gujarati',sans-serif;font-size:0.78rem;
+          color:var(--text-secondary);margin:0;">
+        દસ્તાવેજ-આધારિત અવાજ ખેતી માર્ગદર્શક (Voice-Based PDF Agricultural Advisory)
+      </p>
+    </div>
+    <div style="display:flex;align-items:center;gap:0.5rem;font-size:0.7rem;
+        font-family:'JetBrains Mono',monospace;color:var(--text-secondary);">
+      <span style="border:1px solid var(--border-subtle);background:var(--bg-surface);
+          padding:0.2rem 0.55rem;border-radius:9999px;">● STT: {stt_status}</span>
+      <span style="border:1px solid var(--border-subtle);background:var(--bg-surface);
+          padding:0.2rem 0.55rem;border-radius:9999px;">● TTS: {tts_status}</span>
+      <span style="border:1px solid var(--border-subtle);background:var(--bg-surface);
+          padding:0.2rem 0.55rem;border-radius:9999px;">● LLM: {llm_status}</span>
+    </div>
+  </div>
+</div>""")
 
 
 def render_intent_pill(intent_name: str) -> str:
-    """Renders an uppercase monochrome intent classification pill."""
-    raw_html = f"""
-<div class="intent-pill">
-    <span class="w-1.5 h-1.5 rounded-full" style="background-color: var(--text-primary);"></span>
-    <span>{intent_name.upper()}</span>
-</div>
-"""
-    return clean_html(raw_html)
+    return clean_html(f"""
+<div style="display:inline-flex;align-items:center;gap:0.35rem;font-family:'JetBrains Mono',monospace;
+    font-size:0.7rem;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;
+    color:var(--accent);background:var(--accent-pale);border:1px solid var(--accent-light);
+    padding:0.2rem 0.55rem;border-radius:9999px;margin-bottom:0.5rem;">
+  {intent_name.upper()}
+</div>""")
 
 
 def render_source_chip(filename: str, page_number: int) -> str:
-    """Renders a PDF source-citation chip for grounded answers."""
-    raw_html = f"""
-<div class="source-chip">
-    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-    </svg>
-    <span>📄 {filename} · p.{page_number}</span>
-</div>
-"""
-    return clean_html(raw_html)
+    return clean_html(f"""
+<div style="display:inline-flex;align-items:center;gap:0.4rem;font-family:'JetBrains Mono',monospace;
+    font-size:0.72rem;color:var(--text-secondary);background:var(--bg-primary);
+    border:1px dashed var(--border-subtle);padding:0.3rem 0.65rem;border-radius:8px;margin-top:0.75rem;">
+  📄 {filename} · p.{page_number}
+</div>""")
 
 
-def render_chat_bubble(
-    message: str,
-    is_user: bool = False,
-    intent: Optional[str] = None,
-    source_chip: Optional[Dict[str, Any]] = None
-) -> str:
-    """Renders a chat message bubble using theme variables."""
+def render_chat_bubble(message: str, is_user: bool = False,
+                       intent: Optional[str] = None,
+                       source_chip: Optional[Dict[str, Any]] = None) -> str:
     clean_msg = message.strip()
     if clean_msg.endswith("</div>"):
         clean_msg = clean_msg[:-6].strip()
-
     if is_user:
-        raw_html = f"""
-<div class="flex justify-end mb-4">
-    <div class="chat-bubble-user">
-        {clean_msg}
-    </div>
-</div>
-"""
-        return clean_html(raw_html)
+        return clean_html(f"""
+<div style="display:flex;justify-content:flex-end;margin-bottom:1rem;">
+  <div class="chat-bubble-user">{clean_msg}</div>
+</div>""")
     else:
         intent_html = render_intent_pill(intent) if intent else ""
-        chip_html = (
-            render_source_chip(source_chip["filename"], source_chip["page_number"])
-            if source_chip else ""
-        )
-        raw_html = f"""
-<div class="flex justify-start mb-5">
-    <div class="chat-bubble-ai">
-        {intent_html}
-        <div class="mt-1" style="color: var(--text-primary);">{clean_msg}</div>
-        {chip_html}
+        chip_html   = render_source_chip(source_chip["filename"], source_chip["page_number"]) if source_chip else ""
+        return clean_html(f"""
+<div style="display:flex;justify-content:flex-start;margin-bottom:1.25rem;">
+  <div class="chat-bubble-ai">
+    {intent_html}
+    <div style="margin-top:0.25rem;color:var(--text-primary);">{clean_msg}</div>
+    {chip_html}
+  </div>
+</div>""")
+
+
+def render_price_card(commodity_gu, commodity_en, modal_price, min_price, max_price,
+                      district_gu, price_date, is_live=True) -> str:
+    source_label = "લાઈવ APMC" if is_live else f"છેલ્લો ભાવ ({price_date})"
+    return clean_html(f"""
+<div class="kisaan-card" style="margin-bottom:1rem;">
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;
+      border-bottom:1px solid var(--border-subtle);padding-bottom:0.75rem;margin-bottom:0.75rem;">
+    <div>
+      <div style="font-size:0.65rem;font-family:'JetBrains Mono',monospace;text-transform:uppercase;
+          letter-spacing:0.06em;color:var(--text-muted);">APMC MANDI PRICE</div>
+      <div style="font-family:'Noto Sans Gujarati',sans-serif;font-size:1.1rem;font-weight:700;
+          color:var(--text-primary);">{commodity_gu} <span style="font-size:0.8rem;font-weight:400;
+          color:var(--text-secondary);">({commodity_en})</span></div>
+      <div style="font-size:0.75rem;color:var(--text-secondary);">{district_gu} · {price_date}</div>
     </div>
-</div>
-"""
-        return clean_html(raw_html)
-
-
-def render_price_card(
-    commodity_gu: str,
-    commodity_en: str,
-    modal_price: int,
-    min_price: int,
-    max_price: int,
-    district_gu: str,
-    price_date: str,
-    is_live: bool = True
-) -> str:
-    """Renders a structured monochrome APMC Mandi price result card with theme variables."""
-    source_label = "લાઈવ APMC ભાવ" if is_live else "કેશ કરેલ ભાવ (Cache)"
-    raw_html = f"""
-<div class="kisaan-card mb-5">
-    <div class="flex items-center justify-between border-b pb-3 mb-4" style="border-color: var(--border-subtle);">
-        <div>
-            <span class="text-xs font-mono uppercase tracking-wider" style="color: var(--text-muted);">APMC MANDI PRICE</span>
-            <h3 class="text-xl font-bold font-['Noto_Sans_Gujarati']" style="color: var(--text-primary);">
-                {commodity_gu} <span class="text-sm font-normal" style="color: var(--text-secondary);">({commodity_en})</span>
-            </h3>
-            <p class="text-xs font-['Noto_Sans_Gujarati'] mt-0.5" style="color: var(--text-secondary);">
-                જિલ્લો: {district_gu} · તારીખ: {price_date}
-            </p>
-        </div>
-        <div class="text-right">
-            <span class="inline-block text-[11px] font-mono px-2.5 py-1 rounded-full" style="border: 1px solid var(--border-subtle); background-color: var(--bg-elevated); color: var(--text-secondary);">
-                {source_label}
-            </span>
-        </div>
+    <span style="font-family:'JetBrains Mono',monospace;font-size:0.65rem;border:1px solid var(--border-subtle);
+        background:var(--bg-elevated);padding:0.2rem 0.6rem;border-radius:9999px;
+        color:var(--text-secondary);">{source_label}</span>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.5rem;text-align:center;">
+    <div style="background:var(--bg-elevated);border:1px solid var(--border-subtle);border-radius:10px;padding:0.65rem;">
+      <div style="font-size:0.6rem;font-family:'JetBrains Mono',monospace;text-transform:uppercase;
+          color:var(--text-muted);">MIN</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:1.1rem;font-weight:700;
+          color:var(--text-primary);">₹{min_price}</div>
     </div>
-    <div class="grid grid-cols-3 gap-3 text-center">
-        <div class="p-3 rounded-xl" style="background-color: var(--bg-elevated); border: 1px solid var(--border-subtle);">
-            <div class="text-xs font-mono uppercase" style="color: var(--text-muted);">ન્યૂનતમ (MIN)</div>
-            <div class="text-xl font-bold font-mono mt-1" style="color: var(--text-primary);">₹{min_price}</div>
-            <div class="text-[10px] font-mono mt-0.5" style="color: var(--text-secondary);">પ્રતિ મણ (20 kg)</div>
-        </div>
-        <div class="p-3 rounded-xl shadow-lg" style="background-color: var(--bg-primary); border: 2px solid var(--text-primary);">
-            <div class="text-xs font-mono uppercase" style="color: var(--text-secondary);">બજાર ભાવ (MODAL)</div>
-            <div class="text-2xl font-extrabold font-mono mt-0.5" style="color: var(--text-primary);">₹{modal_price}</div>
-            <div class="text-[10px] font-mono mt-0.5" style="color: var(--text-primary);">પ્રતિ મણ (20 kg)</div>
-        </div>
-        <div class="p-3 rounded-xl" style="background-color: var(--bg-elevated); border: 1px solid var(--border-subtle);">
-            <div class="text-xs font-mono uppercase" style="color: var(--text-muted);">મહત્તમ (MAX)</div>
-            <div class="text-xl font-bold font-mono mt-1" style="color: var(--text-primary);">₹{max_price}</div>
-            <div class="text-[10px] font-mono mt-0.5" style="color: var(--text-secondary);">પ્રતિ મણ (20 kg)</div>
-        </div>
+    <div style="background:var(--accent-pale);border:2px solid var(--accent);border-radius:10px;padding:0.65rem;">
+      <div style="font-size:0.6rem;font-family:'JetBrains Mono',monospace;text-transform:uppercase;
+          color:var(--accent);">MODAL</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:1.3rem;font-weight:800;
+          color:var(--accent);">₹{modal_price}</div>
     </div>
-</div>
-"""
-    return clean_html(raw_html)
+    <div style="background:var(--bg-elevated);border:1px solid var(--border-subtle);border-radius:10px;padding:0.65rem;">
+      <div style="font-size:0.6rem;font-family:'JetBrains Mono',monospace;text-transform:uppercase;
+          color:var(--text-muted);">MAX</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:1.1rem;font-weight:700;
+          color:var(--text-primary);">₹{max_price}</div>
+    </div>
+  </div>
+</div>""")
 
 
-def render_weather_card(
-    district_gu: str,
-    temp_c: float,
-    condition_gu: str,
-    humidity: int,
-    wind_speed: float,
-    advisory_bullets: List[str],
-    is_live: bool = True
-) -> str:
-    """Renders a structured monochrome weather condition + Gujarati farming advisory card."""
-    advisory_items = "".join(
-        f"<li class='text-sm font-['Noto_Sans_Gujarati'] mb-1.5 flex items-start gap-2' style='color: var(--text-primary);'><span class='font-bold' style='color: var(--text-primary);'>•</span> {bullet}</li>"
-        for bullet in advisory_bullets
+def render_weather_card(district_gu, temp_c, condition_gu, humidity, wind_speed,
+                        advisory_bullets, is_live=True) -> str:
+    bullets_html = "".join(
+        f"<li style='font-family:\"Noto Sans Gujarati\",sans-serif;font-size:0.88rem;"
+        f"color:var(--text-primary);margin-bottom:0.4rem;'>• {b}</li>"
+        for b in advisory_bullets
     )
-    raw_html = f"""
-<div class="kisaan-card mb-5">
-    <div class="flex items-center justify-between border-b pb-3 mb-4" style="border-color: var(--border-subtle);">
-        <div>
-            <span class="text-xs font-mono uppercase tracking-wider" style="color: var(--text-muted);">LIVE WEATHER ADVISORY</span>
-            <h3 class="text-xl font-bold font-['Noto_Sans_Gujarati']" style="color: var(--text-primary);">
-                {district_gu} જિલ્લો
-            </h3>
-        </div>
-        <div class="text-right">
-            <div class="text-3xl font-extrabold font-mono" style="color: var(--text-primary);">{temp_c}°C</div>
-            <div class="text-xs font-['Noto_Sans_Gujarati']" style="color: var(--text-secondary);">{condition_gu}</div>
-        </div>
+    return clean_html(f"""
+<div class="kisaan-card" style="margin-bottom:1rem;">
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;
+      border-bottom:1px solid var(--border-subtle);padding-bottom:0.75rem;margin-bottom:0.75rem;">
+    <div>
+      <div style="font-size:0.65rem;font-family:'JetBrains Mono',monospace;text-transform:uppercase;
+          letter-spacing:0.06em;color:var(--text-muted);">LIVE WEATHER ADVISORY</div>
+      <div style="font-family:'Noto Sans Gujarati',sans-serif;font-size:1.1rem;font-weight:700;
+          color:var(--text-primary);">{district_gu} જિલ્લો</div>
     </div>
-    <div class="grid grid-cols-2 gap-3 mb-4 text-xs font-mono" style="color: var(--text-secondary);">
-        <div class="p-2.5 rounded-xl flex justify-between" style="background-color: var(--bg-elevated); border: 1px solid var(--border-subtle);">
-            <span>ભેજ (HUMIDITY):</span>
-            <span class="font-bold" style="color: var(--text-primary);">{humidity}%</span>
-        </div>
-        <div class="p-2.5 rounded-xl flex justify-between" style="background-color: var(--bg-elevated); border: 1px solid var(--border-subtle);">
-            <span>પવન (WIND):</span>
-            <span class="font-bold" style="color: var(--text-primary);">{wind_speed} km/h</span>
-        </div>
+    <div style="text-align:right;">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:2rem;font-weight:800;
+          color:var(--text-primary);">{temp_c}°C</div>
+      <div style="font-family:'Noto Sans Gujarati',sans-serif;font-size:0.72rem;
+          color:var(--text-secondary);">{condition_gu}</div>
     </div>
-    <div class="border-t pt-3" style="border-color: var(--border-subtle);">
-        <div class="text-xs font-mono uppercase mb-2" style="color: var(--text-muted);">ખેતી ઉપયોગી સલાહ (FARMING ADVISORY)</div>
-        <ul class="space-y-1">
-            {advisory_items}
-        </ul>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;margin-bottom:0.75rem;">
+    <div style="background:var(--bg-elevated);border:1px solid var(--border-subtle);
+        border-radius:10px;padding:0.5rem;display:flex;justify-content:space-between;
+        font-size:0.78rem;font-family:'JetBrains Mono',monospace;color:var(--text-secondary);">
+      <span>ભેજ:</span><span style="font-weight:700;color:var(--text-primary);">{humidity}%</span>
     </div>
-</div>
-"""
-    return clean_html(raw_html)
+    <div style="background:var(--bg-elevated);border:1px solid var(--border-subtle);
+        border-radius:10px;padding:0.5rem;display:flex;justify-content:space-between;
+        font-size:0.78rem;font-family:'JetBrains Mono',monospace;color:var(--text-secondary);">
+      <span>પવન:</span><span style="font-weight:700;color:var(--text-primary);">{wind_speed} km/h</span>
+    </div>
+  </div>
+  <div style="border-top:1px solid var(--border-subtle);padding-top:0.6rem;">
+    <div style="font-size:0.62rem;font-family:'JetBrains Mono',monospace;text-transform:uppercase;
+        letter-spacing:0.05em;color:var(--text-muted);margin-bottom:0.4rem;">ખેતી સલાહ</div>
+    <ul style="list-style:none;padding:0;margin:0;">{bullets_html}</ul>
+  </div>
+</div>""")
 
 
 def render_mic_button(is_recording: bool = False, elapsed_seconds: int = 0) -> str:
-    """Renders the primary circular microphone trigger button with optional pulse animation."""
+    label = f"રેકોર્ડ ({elapsed_seconds}s)…" if is_recording else "માઇક દબાવીને બોલો"
     status_class = "mic-button-recording" if is_recording else ""
-    status_label = f"રેકોર્ડિંગ ચાલુ છે ({elapsed_seconds}s)…" if is_recording else "માઇક દબાવીને બોલો"
-    raw_html = f"""
+    return clean_html(f"""
 <div class="mic-container">
-    <div class="mic-button-ring {status_class}">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-9 w-9" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
-        </svg>
-    </div>
-    <p class="text-sm font-semibold font-['Noto_Sans_Gujarati'] mt-3" style="color: var(--text-primary);">
-        {status_label}
-    </p>
-    <p class="text-xs font-['Inter'] mt-0.5" style="color: var(--text-muted);">
-        Click to start recording your voice in Gujarati
-    </p>
-</div>
-"""
-    return clean_html(raw_html)
-
-
-def render_quick_chips(chips: Optional[List[str]] = None) -> str:
-    """Renders quick recommendation prompt pills."""
-    default_chips = [
-        "💰 કપાસનો ભાવ",
-        "☔ વાતાવરણ",
-        "📄 PM-KISAN યોજના",
-        "🌱 ખાતરની માત્રા",
-        "🐛 પાક રોગ"
-    ]
-    target_chips = chips or default_chips
-    chip_elements = "".join(
-        f'<button class="quick-chip">{chip}</button>'
-        for chip in target_chips
-    )
-    raw_html = f"""
-<div class="flex flex-wrap gap-2 justify-center my-4">
-    {chip_elements}
-</div>
-"""
-    return clean_html(raw_html)
+  <div class="mic-button-ring {status_class}">
+    <svg xmlns="http://www.w3.org/2000/svg" style="height:2.2rem;width:2.2rem;" fill="none"
+        viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+        d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/>
+    </svg>
+  </div>
+  <p style="font-family:'Noto Sans Gujarati',sans-serif;font-size:0.9rem;font-weight:600;
+      color:var(--text-primary);margin-top:0.6rem;">{label}</p>
+</div>""")
 
 
 def render_empty_state() -> str:
-    """Renders the default empty state prompt."""
-    raw_html = f"""
-<div class="kisaan-card p-8 text-center my-6">
-    <div class="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center" style="background-color: var(--bg-elevated); border: 1px solid var(--border-subtle); color: var(--text-primary);">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
-        </svg>
-    </div>
-    <h3 class="text-xl font-bold font-['Space_Grotesk']" style="color: var(--text-primary);">માઇક દબાવીને તમારો પ્રશ્ન પૂછો</h3>
-    <p class="text-sm font-['Noto_Sans_Gujarati'] max-w-md mx-auto mt-2 leading-relaxed" style="color: var(--text-secondary);">
-        તમે સરકારી યોજનાઓ, ખાતરનું પ્રમાણ, હવામાન અથવા આજના બજાર ભાવ વિશે ગુજરાતીમાં પૂછી શકો છો.
-    </p>
-</div>
-"""
-    return clean_html(raw_html)
+    return clean_html("""
+<div class="kisaan-card" style="padding:2rem;text-align:center;margin:1rem 0;">
+  <div style="width:60px;height:60px;margin:0 auto 0.75rem;border-radius:50%;
+      background:var(--accent-pale);border:2px solid var(--accent-light);
+      display:flex;align-items:center;justify-content:center;font-size:1.5rem;">🎤</div>
+  <h3 style="font-family:'Space Grotesk',sans-serif;font-size:1.1rem;font-weight:700;
+      color:var(--text-primary);margin:0 0 0.4rem 0;">માઇક દબાવીને તમારો પ્રશ્ન પૂછો</h3>
+  <p style="font-family:'Noto Sans Gujarati',sans-serif;font-size:0.85rem;
+      color:var(--text-secondary);max-width:380px;margin:0 auto;line-height:1.65;">
+    સરકારી યોજનાઓ, ખાતરનું પ્રમાણ, હવામાન અથવા આજના બજાર ભાવ વિશે ગુજરાતીમાં પૂછો.
+  </p>
+</div>""")
 
 
 def render_loading_skeleton(current_stage: str = "સાંભળી રહ્યું છે…") -> str:
-    """Renders the monochrome loading skeleton screen with active stage label."""
-    raw_html = f"""
-<div class="kisaan-card p-5 my-4">
-    <div class="flex items-center gap-3 mb-4">
-        <span class="w-3 h-3 rounded-full animate-ping" style="background-color: var(--text-primary);"></span>
-        <span class="text-sm font-semibold font-['Noto_Sans_Gujarati']" style="color: var(--text-primary);">
-            {current_stage}
-        </span>
-    </div>
-    <div class="space-y-3">
-        <div class="h-4 skeleton-box w-3/4"></div>
-        <div class="h-4 skeleton-box w-full"></div>
-        <div class="h-4 skeleton-box w-5/6"></div>
-    </div>
-</div>
-"""
-    return clean_html(raw_html)
+    return clean_html(f"""
+<div class="kisaan-card" style="padding:1.25rem;margin:0.75rem 0;">
+  <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:0.75rem;">
+    <span style="width:10px;height:10px;border-radius:50%;background:var(--accent);
+        display:inline-block;animation:pulse-ring 1s infinite;"></span>
+    <span style="font-family:'Noto Sans Gujarati',sans-serif;font-size:0.88rem;font-weight:600;
+        color:var(--text-primary);">{current_stage}</span>
+  </div>
+  <div style="margin-bottom:0.5rem;"><div class="skeleton-box" style="height:14px;width:75%;"></div></div>
+  <div style="margin-bottom:0.5rem;"><div class="skeleton-box" style="height:14px;width:100%;"></div></div>
+  <div><div class="skeleton-box" style="height:14px;width:85%;"></div></div>
+</div>""")
 
 
 def render_pipeline_trace(trace_data: Dict[str, Any]) -> str:
-    """Renders the collapsible debug pipeline trace panel."""
     sources_str = ", ".join(
-        f"{src.get('filename')} (p.{src.get('page')})" for src in trace_data.get("sources", [])
+        f"{s.get('filename')} (p.{s.get('page')})" for s in trace_data.get("sources", [])
     ) if trace_data.get("sources") else "N/A"
-
-    raw_html = f"""
-<div class="trace-panel mt-6">
-    <div class="flex items-center justify-between border-b pb-2 mb-3" style="border-color: var(--border-subtle);">
-        <span class="text-xs font-mono font-bold uppercase tracking-wider" style="color: var(--text-primary);">🔍 PIPELINE TRACE DEBUG</span>
-        <span class="text-[10px] font-mono" style="color: var(--text-secondary);">TOTAL LATENCY: {trace_data.get('total_latency_ms', 0)}ms</span>
-    </div>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
-        <div>
-            <div class="trace-label">1. GUJARATI TRANSCRIPT (STT)</div>
-            <div class="font-['Noto_Sans_Gujarati']" style="color: var(--text-primary);">{trace_data.get('gu_transcript', 'N/A')}</div>
-        </div>
-        <div>
-            <div class="trace-label">2. ENGLISH TRANSLATION</div>
-            <div class="font-mono" style="color: var(--text-primary);">{trace_data.get('en_query', 'N/A')}</div>
-        </div>
-        <div>
-            <div class="trace-label">3. DETECTED INTENT & CONFIDENCE</div>
-            <div class="font-mono" style="color: var(--text-primary);">{trace_data.get('intent', 'N/A')} ({trace_data.get('confidence', '0.00')})</div>
-        </div>
-        <div>
-            <div class="trace-label">4. RETRIEVED PDF SOURCES</div>
-            <div class="font-mono" style="color: var(--text-primary);">{sources_str}</div>
-        </div>
-        <div class="md:col-span-2">
-            <div class="trace-label">5. GROUNDED ENGLISH LLM ANSWER</div>
-            <div class="font-mono" style="color: var(--text-primary);">{trace_data.get('en_answer', 'N/A')}</div>
-        </div>
-        <div class="md:col-span-2">
-            <div class="trace-label">6. FINAL GUJARATI SPOKEN ANSWER</div>
-            <div class="font-['Noto_Sans_Gujarati']" style="color: var(--text-primary);">{trace_data.get('gu_answer', 'N/A')}</div>
-        </div>
-        <div>
-            <div class="trace-label">7. TTS ENGINE</div>
-            <div class="font-mono" style="color: var(--text-primary);">{trace_data.get('tts_engine', 'N/A')}</div>
-        </div>
-        <div>
-            <div class="trace-label">8. STAGE LATENCY BREAKDOWN (MS)</div>
-            <div class="font-mono" style="color: var(--text-primary);">{trace_data.get('latency_ms', {})}</div>
-        </div>
-    </div>
-</div>
-"""
-    return clean_html(raw_html)
+    return clean_html(f"""
+<div class="trace-panel" style="margin-top:1.5rem;">
+  <div style="display:flex;justify-content:space-between;border-bottom:1px solid var(--border-subtle);
+      padding-bottom:0.5rem;margin-bottom:0.75rem;">
+    <span style="font-size:0.72rem;font-weight:700;text-transform:uppercase;
+        letter-spacing:0.05em;color:var(--accent);">🔍 PIPELINE TRACE</span>
+    <span style="font-size:0.65rem;color:var(--text-secondary);">
+      LATENCY: {trace_data.get('total_latency_ms',0)}ms</span>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.6rem;font-size:0.78rem;">
+    <div><div class="trace-label">1. GUJARATI (STT)</div>
+      <div style="color:var(--text-primary);font-family:'Noto Sans Gujarati',sans-serif;">
+        {trace_data.get('gu_transcript','N/A')}</div></div>
+    <div><div class="trace-label">2. ENGLISH</div>
+      <div style="color:var(--text-primary);">{trace_data.get('en_query','N/A')}</div></div>
+    <div><div class="trace-label">3. INTENT</div>
+      <div style="color:var(--text-primary);">{trace_data.get('intent','N/A')} ({trace_data.get('confidence','0.00')})</div></div>
+    <div><div class="trace-label">4. SOURCES</div>
+      <div style="color:var(--text-primary);">{sources_str}</div></div>
+    <div style="grid-column:1/-1;"><div class="trace-label">5. FINAL GUJARATI ANSWER</div>
+      <div style="color:var(--text-primary);font-family:'Noto Sans Gujarati',sans-serif;">
+        {trace_data.get('gu_answer','N/A')}</div></div>
+  </div>
+</div>""")
