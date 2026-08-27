@@ -127,8 +127,14 @@ class LLMService:
         return english_answer, gujarati_answer, validation_meta
 
     def _call_hf_chat_api(self, prompt: str) -> str:
-        """Queries Hugging Face Chat Model Inference Endpoint with fast 2.0s timeout."""
-        api_url = f"https://api-inference.huggingface.co/models/{self.model_id}"
+        """Queries Hugging Face Chat Model Inference Endpoint with fallback router endpoints."""
+        if not settings.HF_API_KEY:
+            return ""
+
+        endpoints = [
+            f"https://router.huggingface.co/hf-inference/models/{self.model_id}",
+            f"https://api-inference.huggingface.co/models/{self.model_id}"
+        ]
         headers = {"Authorization": f"Bearer {settings.HF_API_KEY}"}
         
         payload = {
@@ -141,13 +147,18 @@ class LLMService:
             }
         }
 
-        resp = requests.post(api_url, headers=headers, json=payload, timeout=2.0)
-        if resp.status_code == 200:
-            res_json = resp.json()
-            if isinstance(res_json, list) and len(res_json) > 0:
-                txt = res_json[0].get("generated_text", "").strip()
-                if txt and not any(re.search(p, txt.lower()) for p in SKIP_PATTERNS[:4]):
-                    return txt
+        for api_url in endpoints:
+            try:
+                resp = requests.post(api_url, headers=headers, json=payload, timeout=4.0)
+                if resp.status_code == 200:
+                    res_json = resp.json()
+                    if isinstance(res_json, list) and len(res_json) > 0:
+                        txt = res_json[0].get("generated_text", "").strip()
+                        if txt and not any(re.search(p, txt.lower()) for p in SKIP_PATTERNS[:4]):
+                            return txt
+            except Exception as e:
+                logger.debug(f"Endpoint {api_url} failed: {e}")
+                continue
         return ""
 
     def _assemble_chunk_verbatim_answer(self, context_text: str, query_text: str = "") -> str:

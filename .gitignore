@@ -16,14 +16,10 @@ ENV/
 /models/piper/*
 !/models/**/.gitkeep
 
-# Data & Database
-*.db
-*.sqlite
-*.sqlite3
-/data/pdfs/schemes/*
-/data/pdfs/crop_advisory/*
-/data/pdfs/general/*
-!/data/pdfs/**/.gitkeep
+# Data & Database - Allow pre-built database and knowledge PDFs
+!/data/kisaan_mitra.db
+/data/cache/*
+!/data/cache/.gitkeep
 
 # Operating System
 .DS_Store

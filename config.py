@@ -38,7 +38,7 @@ class AppSettings(BaseModel):
     CHUNK_SIZE: int = Field(default=800)
     CHUNK_OVERLAP: int = Field(default=120)
     TOP_K_RETRIEVAL: int = Field(default=5)
-    SIMILARITY_THRESHOLD: float = Field(default=0.45)
+    SIMILARITY_THRESHOLD: float = Field(default=0.35)
 
     # Local Storage Paths
     PDF_DIR: Path = Field(default=BASE_DIR / "data" / "pdfs")
