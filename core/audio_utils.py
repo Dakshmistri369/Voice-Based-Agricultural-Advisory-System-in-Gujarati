@@ -1,10 +1,12 @@
 """
 Audio Normalization Utilities for Mic Bytes & File Conversion.
-Normalizes arbitrary audio streams to 16kHz Mono 16-bit PCM WAV format.
+Normalizes arbitrary browser audio streams (WebM, Opus, Ogg, MP3, M4A, WAV)
+to 16kHz Mono 16-bit PCM WAV format using ffmpeg with fallback.
 """
 
 import io
 import wave
+import subprocess
 import logging
 from typing import Tuple
 
@@ -14,27 +16,50 @@ logger = logging.getLogger(__name__)
 def normalize_audio_to_wav(audio_bytes: bytes, target_sample_rate: int = 16000) -> bytes:
     """
     Normalizes input audio bytes to 16kHz mono 16-bit PCM WAV.
+    Handles WebM/Opus, OGG, MP3, AAC, and WAV directly via ffmpeg.
     Returns normalized WAV bytes.
     """
-    if not audio_bytes:
+    if not audio_bytes or len(audio_bytes) < 50:
         return b""
 
-    # Check if already a valid WAV header
+    # 1. Primary conversion via ffmpeg subprocess (handles WebM, Opus, MP3, OGG, AAC)
+    try:
+        process = subprocess.Popen(
+            [
+                "ffmpeg",
+                "-y",
+                "-i", "pipe:0",
+                "-acodec", "pcm_s16le",
+                "-ac", "1",
+                "-ar", str(target_sample_rate),
+                "-f", "wav",
+                "pipe:1"
+            ],
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE
+        )
+        wav_out, _ = process.communicate(input=audio_bytes, timeout=4)
+        if process.returncode == 0 and wav_out and len(wav_out) > 44:
+            return wav_out
+    except Exception as e:
+        logger.debug(f"ffmpeg conversion fallback: {e}")
+
+    # 2. Check if already a valid WAV header
     if audio_bytes.startswith(b"RIFF") and b"WAVE" in audio_bytes[:16]:
         try:
             with wave.open(io.BytesIO(audio_bytes), "rb") as wave_in:
                 channels = wave_in.getnchannels()
                 framerate = wave_in.getframerate()
                 sampwidth = wave_in.getsampwidth()
-                frames = wave_in.readframes(wave_in.getnframes())
 
                 # If parameters match 16kHz mono 16-bit, return as is
                 if channels == 1 and framerate == target_sample_rate and sampwidth == 2:
                     return audio_bytes
         except Exception as e:
-            logger.warning(f"Error reading WAV header: {e}")
+            logger.debug(f"WAV verification note: {e}")
 
-    # Fallback to returning raw bytes wrapped in standard WAV header format
+    # 3. Fallback to wrapping raw bytes in standard WAV header format
     return _create_wav_header(audio_bytes, sample_rate=target_sample_rate)
 
 
