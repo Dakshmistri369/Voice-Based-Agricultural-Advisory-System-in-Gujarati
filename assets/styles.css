@@ -355,16 +355,83 @@ section[data-testid="stSidebar"],
   box-shadow: var(--shadow-lg) !important;
 }
 
-/* Back nav buttons */
-.st-key-top_back_home_btn button,
-[class*="back_btn"] button {
-  background: var(--bg-surface) !important;
-  color: var(--text-secondary) !important;
+/* Dashboard Info & Card Buttons */
+div[data-testid*="btn_info_"] button,
+button[key*="btn_info_"] {
+  height: 68px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  white-space: pre-line !important;
+  line-height: 1.25 !important;
+  font-size: 0.78rem !important;
+  font-weight: 700 !important;
+  padding: 0.35rem 0.2rem !important;
+  background-color: var(--bg-elevated) !important;
   border: 1px solid var(--border-subtle) !important;
-  border-radius: 9999px !important;
-  font-size: 0.82rem !important;
+  color: var(--text-primary) !important;
+  border-radius: 10px !important;
+}
+
+div[data-testid*="btn_info_"] button:hover,
+button[key*="btn_info_"]:hover {
+  border-color: var(--accent) !important;
+  background-color: var(--accent-pale) !important;
+}
+
+/* Alert buttons in Home */
+button[key*="alert_ask_"] {
+  text-align: left !important;
+  justify-content: flex-start !important;
+  font-size: 0.76rem !important;
+  padding: 0.4rem 0.6rem !important;
+  margin-bottom: 0.25rem !important;
+  background-color: var(--bg-surface) !important;
+  border: 1px solid var(--border-subtle) !important;
+  color: var(--text-secondary) !important;
+  border-radius: 8px !important;
+}
+
+button[key*="alert_ask_"]:hover {
+  background-color: var(--accent-pale) !important;
+  color: var(--accent) !important;
+  border-color: var(--accent-light) !important;
+}
+
+/* Scheme Buttons */
+button[key*="btn_scheme_item_"] {
+  font-size: 0.72rem !important;
+  font-weight: 700 !important;
+  padding: 0.35rem 0.5rem !important;
+  background-color: var(--accent-pale) !important;
+  color: var(--accent) !important;
+  border: 1px solid var(--accent-light) !important;
+  border-radius: 8px !important;
+}
+
+button[key*="btn_scheme_item_"]:hover {
+  background-color: var(--accent) !important;
+  color: #FFFFFF !important;
+}
+
+/* "View More / સંપૂર્ણ જુઓ" navigation buttons at bottom of cards */
+button[key*="btn_more_"] {
+  font-size: 0.76rem !important;
   font-weight: 600 !important;
-  padding: 0.35rem 0.9rem !important;
+  padding: 0.35rem 0.6rem !important;
+  margin-top: 0.35rem !important;
+  background-color: var(--bg-surface) !important;
+  border: 1px dashed var(--border-subtle) !important;
+  color: var(--text-secondary) !important;
+  border-radius: 8px !important;
+}
+
+button[key*="btn_more_"]:hover {
+  background-color: var(--accent-pale) !important;
+  color: var(--accent) !important;
+  border: 1px solid var(--accent) !important;
 }
 
 /* ═══════════════════════════════════════════════════════════════════

@@ -1,12 +1,13 @@
 """
-Home Dashboard — 9-panel grid layout matching reference PNG exactly.
+Home Dashboard — 9-panel interactive grid layout matching reference PNG.
 Panel layout (3 rows × 3 cols):
-  Row 1: Home Dashboard | Voice Assistant | Answer with Sources
-  Row 2: Crop Advisory  | Weather & Alerts| Market Prices
-  Row 3: Soil Test      | Govt Schemes    | History & Saved
+  Row 1: Home Dashboard | Voice Assistant (Interactive Mic) | Answer with Sources
+  Row 2: Crop Advisory  | Weather & Alerts                 | Market Prices
+  Row 3: Soil Test      | Govt Schemes                     | History & Saved
 Footer: Feature badge bar
 """
 
+import hashlib
 import streamlit as st
 from config import settings
 from pipeline import pipeline
@@ -15,21 +16,16 @@ from ui.theme import normalize_theme_name, get_theme_dict
 from ui.components import (
     clean_html,
     panel_badge,
-    render_home_info_bar,
-    render_voice_panel,
     render_answer_panel,
     render_crop_panel_mini,
     render_weather_panel_mini,
     render_price_table_mini,
     render_soil_panel_mini,
-    render_schemes_panel_mini,
-    render_history_panel_mini,
     render_feature_footer,
     render_chat_bubble,
     render_price_card,
     render_weather_card,
     render_pipeline_trace,
-    render_empty_state,
 )
 
 try:
@@ -38,11 +34,11 @@ except ImportError:
     audio_recorder = None
 
 
-# ── Static/fallback data for panels (live data is fetched in full sections) ──
+# ── Static/fallback data for panels ─────────────────────────────────
 _DEFAULT_SCHEMES = [
-    ("🚜", "PM કિસાન સન્માન નિધિ", "વર્ષે ₹6,000 ની સહાય", "schemes"),
-    ("💳", "કિસાન ક્રેડિટ કાર્ડ (KCC)", "સસ્તા વ્યાજે લોન", "schemes"),
-    ("🛡️", "પાક વિમા યોજના", "પાક નુક્સાન પર વીમો", "schemes"),
+    ("🚜", "PM કિસાન સન્માન નિધિ", "વર્ષે ₹6,000 ની સહાય", "PM-KISAN યોજના વિશે માહિતી આપો"),
+    ("💳", "કિસાન ક્રેડિટ કાર્ડ (KCC)", "સસ્તા વ્યાજે લોન", "કિસાન ક્રેડિટ કાર્ડ (KCC) યોજના વિશે જણાવો"),
+    ("🛡️", "પાક વિમા યોજના", "પાક નુક્સાન પર વીમો", "પ્રધાનમંત્રી પાક વીમા યોજના (PMFBY) ના નિયમો શું છે?"),
 ]
 
 _DEFAULT_PRICE_ROWS = [
@@ -65,15 +61,15 @@ def _try_fetch_weather(district: str) -> dict:
         return weather_service.fetch_weather(district)
     except Exception:
         return {
-            "temp_c": 32, "humidity": 65, "wind_speed": 12,
+            "temp_c": 26.3, "humidity": 65, "wind_speed": 12,
             "condition_gujarati": "સૂર્ય, હળવો ઘટાટોપ",
             "forecast_days": [
                 {"day_gu": "આજે", "temp_max": 32, "temp_min": 24, "rain_mm": 0},
                 {"day_gu": "કાલે", "temp_max": 31, "temp_min": 23, "rain_mm": 2},
                 {"day_gu": "પર.", "temp_max": 30, "temp_min": 23, "rain_mm": 5},
             ],
-            "advisories": ["પાણી આઠ-આઠ ઘંટે આપો", "ઠંડા કલ્ટ ઉગ્યા ટાળો"],
-            "alert_text": "2 દિવસમાં વરસાદ થઈ શકે. ફ્લડ ઝ ઘ ઝ.",
+            "advisories": ["પાણી આઠ-આઠ ઘંટે આપો", "તીડનું નિયંત્રણ કરો"],
+            "alert_text": "2 દિવસમાં વરસાદની શક્યતા છે. પાકની સુરક્ષા કરો.",
         }
 
 
@@ -95,7 +91,7 @@ def _get_soil(district: str) -> dict:
 
 
 def render_home_section():
-    """9-panel grid home dashboard."""
+    """9-panel interactive grid home dashboard."""
 
     current_theme = normalize_theme_name(st.session_state.get("theme", "green"))
     tokens = get_theme_dict(current_theme)
@@ -105,7 +101,7 @@ def render_home_section():
 
     # ── Greeting header ────────────────────────────────
     st.markdown(clean_html(f"""
-<div style="padding:0.25rem 0 0.75rem 0;">
+<div style="padding:0.25rem 0 0.5rem 0;">
   <div style="font-family:'Space Grotesk',sans-serif;font-size:1.35rem;font-weight:700;
       color:var(--text-primary);margin-bottom:0.1rem;">
     🌾 ગુજરાતી કિસાન મિત્ર AI
@@ -122,6 +118,9 @@ def render_home_section():
         cotton_price = _try_fetch_price("Cotton", district)
         soil = _get_soil(district)
 
+    query_to_process = None
+    is_audio_query = False
+
     # ─────────────────────────────────────────────────────
     #  ROW 1: Home Dashboard | Voice Assistant | Answer
     # ─────────────────────────────────────────────────────
@@ -131,33 +130,96 @@ def render_home_section():
     with col1:
         st.markdown(panel_badge("1", "Home Dashboard"), unsafe_allow_html=True)
         with st.container():
-            st.markdown(clean_html(f"""
-<div class="panel-card">
-  <div class="greeting-title">🙏 નમસ્તે ખેડૂતભાઈ!</div>
-  <div class="greeting-sub">આજની મુખ્ય માહિતી</div>
-  {render_home_info_bar(weather['temp_c'], cotton_price.get('modal_price', 1527), 'મગફળી')}
-  <div style="margin-bottom:0.5rem;">
-    <div style="font-family:'JetBrains Mono',monospace;font-size:0.6rem;text-transform:uppercase;
-        letter-spacing:0.05em;color:var(--text-muted);margin-bottom:0.35rem;">ઝડપી સહાય</div>
-    <div style="display:flex;gap:0.4rem;flex-wrap:wrap;">
-      <div class="voice-btn-large" style="flex:1;font-size:0.75rem;padding:0.5rem 0.5rem;">🎤 અવાજથી પૂછો</div>
-      <div class="text-btn-large" style="flex:1;font-size:0.75rem;padding:0.5rem 0.5rem;">💬 લખીને પૂછો</div>
-    </div>
+            st.markdown(clean_html("""
+<div style="background:var(--bg-surface);border:1px solid var(--border-subtle);border-radius:16px;padding:1rem;box-shadow:var(--shadow);">
+  <div style="font-family:'Noto Sans Gujarati',sans-serif;font-size:1.15rem;font-weight:700;color:var(--text-primary);margin-bottom:0.15rem;">
+    🙏 નમસ્તે ખેડૂતભાઈ!
   </div>
-  <div style="margin-top:0.4rem;">
-    <div style="font-family:'JetBrains Mono',monospace;font-size:0.6rem;text-transform:uppercase;
-        letter-spacing:0.05em;color:var(--text-muted);margin-bottom:0.25rem;">તાઝ સૂચનાઓ</div>
-    <div class="alert-row"><div class="alert-dot"></div><div>મગફળીમાં તીડનું નિયંત્રણ કરો.</div></div>
-    <div class="alert-row"><div class="alert-dot"></div><div>વરસાદની શક્યતા 2 દિવસમાં છે.</div></div>
+  <div style="font-family:Inter,sans-serif;font-size:0.72rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.6rem;">
+    આજની મુખ્ય માહિતી (Click to explore)
   </div>
 </div>"""), unsafe_allow_html=True)
 
-    # --- Panel 2: Voice Assistant ---
+            # 3 Clickable Stat Buttons in Info Bar
+            c1, c2, c3 = st.columns(3)
+            with c1:
+                if st.button(f"🌤️ {weather['temp_c']}°C\nહવામાન", key="btn_info_weather", use_container_width=True, help="હવામાન વિભાગ પર જાઓ"):
+                    st.session_state["active_section"] = "weather"
+                    st.rerun()
+            with c2:
+                if st.button(f"💰 ₹{cotton_price.get('modal_price', 1527)}\nબજાર ભાવ", key="btn_info_price", use_container_width=True, help="બજાર ભાવ વિભાગ પર જાઓ"):
+                    st.session_state["active_section"] = "prices"
+                    st.rerun()
+            with c3:
+                if st.button("🌱 મગફળી\nપાક સલાહ", key="btn_info_crop", use_container_width=True, help="પાક સલાહ વિભાગ પર જાઓ"):
+                    st.session_state["active_section"] = "crop_advisory"
+                    st.rerun()
+
+            st.markdown("<div style='height:0.35rem;'></div>", unsafe_allow_html=True)
+
+            # Quick Action Buttons
+            st.markdown("<p style='font-family:JetBrains Mono,monospace;font-size:0.6rem;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-muted);margin:0 0 0.3rem 0;'>ઝડપી સહાય</p>", unsafe_allow_html=True)
+            q1, q2 = st.columns(2)
+            with q1:
+                if st.button("🎤 અવાજથી પૂછો", key="btn_quick_voice", use_container_width=True, help="માઇકથી પ્રશ્ન પૂછો"):
+                    query_to_process = f"આજે {district} માં ખેડૂતો માટે મુખ્ય સલાહ શું છે?"
+            with q2:
+                if st.button("💬 લખીને પૂછો", key="btn_quick_text", use_container_width=True, help="ટેક્સ્ટથી પ્રશ્ન પૂછો"):
+                    query_to_process = f"આજે {district} માં કપાસ અને મગફળીનો ભાવ કેટલો છે?"
+
+            # Clickable Alert Suggestions
+            st.markdown("<p style='font-family:JetBrains Mono,monospace;font-size:0.6rem;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-muted);margin:0.4rem 0 0.25rem 0;'>તાજા સૂચનાઓ (Click to ask)</p>", unsafe_allow_html=True)
+            if st.button("🐛 મગફળીમાં તીડનું નિયંત્રણ કેવી રીતે કરવું?", key="alert_ask_1", use_container_width=True):
+                query_to_process = "મગફળીમાં તીડનું નિયંત્રણ કેવી રીતે કરવું?"
+            if st.button("🌧️ વરસાદની શક્યતા 2 દિવસમાં છે (વિગત)", key="alert_ask_2", use_container_width=True):
+                query_to_process = f"આગામી 2 દિવસમાં {district} માં વરસાદની શું આગાહી છે?"
+
+    # --- Panel 2: Voice Assistant (Interactive Microphone) ---
     with col2:
         st.markdown(panel_badge("2", "Voice Assistant (Ask)"), unsafe_allow_html=True)
         with st.container():
-            st.markdown(f'<div class="panel-card">{render_voice_panel()}</div>',
-                        unsafe_allow_html=True)
+            waveform_bars = "".join('<div class="waveform-bar"></div>' for _ in range(10))
+            st.markdown(clean_html(f"""
+<div style="background:var(--bg-surface);border:1px solid var(--border-subtle);border-radius:16px;padding:0.75rem 1rem;box-shadow:var(--shadow);text-align:center;">
+  <div style="font-family:'Noto Sans Gujarati',sans-serif;font-size:1rem;font-weight:700;color:var(--text-primary);margin-bottom:0.3rem;">
+    કિસાન મિત્ર AI
+  </div>
+  <div class="waveform" style="justify-content:center;margin:0.2rem auto;">{waveform_bars}</div>
+</div>"""), unsafe_allow_html=True)
+
+            # Real interactive microphone widget in Panel 2
+            st.markdown("<div style='text-align:center;margin:0.5rem 0 0.2rem 0;'>", unsafe_allow_html=True)
+            if audio_recorder is not None:
+                panel2_audio = audio_recorder(
+                    text="🎙️ માઇક દબાવીને બોલો (Click Mic to Speak)",
+                    recording_color="#DC2626",
+                    neutral_color="#2D6A4F",
+                    icon_name="microphone",
+                    icon_size="3x",
+                    key="panel2_main_mic"
+                )
+                if panel2_audio:
+                    audio_hash = hashlib.md5(panel2_audio).hexdigest()
+                    if audio_hash != st.session_state.get("last_processed_audio_hash"):
+                        query_to_process = panel2_audio
+                        is_audio_query = True
+                        st.session_state["last_processed_audio_hash"] = audio_hash
+            else:
+                st.info("Audio recorder module loading...")
+            st.markdown("</div>", unsafe_allow_html=True)
+
+            st.markdown(clean_html("""
+<div style="text-align:center;padding:0.2rem 0;">
+  <div style="font-family:'Noto Sans Gujarati',sans-serif;font-size:0.88rem;font-weight:600;color:var(--text-primary);">
+    સાંભળું છું… બોલો
+  </div>
+  <div style="font-family:'Noto Sans Gujarati',sans-serif;font-size:0.72rem;color:var(--text-muted);font-style:italic;margin-top:0.2rem;">
+    ઉદાહ.: "મગફળીમાં પીળાશ શા માટે આવે છે?"
+  </div>
+  <div style="display:inline-flex;align-items:center;gap:0.35rem;background:var(--bg-elevated);border:1px solid var(--border-subtle);border-radius:9999px;padding:0.2rem 0.65rem;font-family:'Noto Sans Gujarati',sans-serif;font-size:0.75rem;color:var(--text-secondary);margin-top:0.4rem;">
+    <span>🇮🇳</span><span>ગુજરાતી</span><span style="color:var(--text-muted);">▾</span>
+  </div>
+</div>"""), unsafe_allow_html=True)
 
     # --- Panel 3: Answer (with Sources) ---
     with col3:
@@ -168,16 +230,20 @@ def render_home_section():
                 bullets = [b.strip("• ").strip() for b in
                            last.get("gu_answer", "").split("।") if b.strip()][:3]
                 if not bullets:
-                    bullets = ["AI જવાબ ઉપર દ્રષ્ટ કરો"]
+                    bullets = ["AI જવાબ ઉપર દર્શાવેલ છે."]
                 srcs = [(s.get("filename", "PDF"), "PDF")
                         for s in last.get("sources", [])[:3]]
                 answer_html = render_answer_panel(
-                    answer_text=last.get("gu_answer", "")[:120] + "…",
+                    answer_text=last.get("gu_answer", "")[:130] + ("…" if len(last.get("gu_answer", "")) > 130 else ""),
                     bullets=bullets[:3] if bullets else None,
                     sources=srcs if srcs else None
                 )
             else:
-                answer_html = render_answer_panel()
+                answer_html = render_answer_panel(
+                    answer_text="મગફળીમાં પીળાશ નાઇટ્રોજનની કમી, વધુ પાણી અથવા રોગને કારણે આવે છે.",
+                    bullets=["યોગ્ય ખાતર આપો (યુરિયા)", "પાણીનું નીકળવું સુનિશ્ચિત કરો", "પાંડડાનું ફૂગનાશક છિટકાવ કરો"],
+                    sources=[("કૃષિ યુનિ. માર્ગદર્શન PDF", "PDF"), ("ICAR મગફળી પાક માર્ગદર્શન", "PDF"), ("કૃષિ નિષ્ણાત સલાહ", "Web")]
+                )
             st.markdown(f'<div class="panel-card">{answer_html}</div>', unsafe_allow_html=True)
 
     st.markdown('<div style="height:0.5rem;"></div>', unsafe_allow_html=True)
@@ -193,16 +259,19 @@ def render_home_section():
         crop_html = render_crop_panel_mini(selected_crop)
         st.markdown(f'<div class="panel-card">{crop_html}</div>', unsafe_allow_html=True)
 
-        # Crop selector buttons below
         crops_mini = [
             ("cotton", "🌿", "કપાસ"), ("groundnut", "🥜", "મગફળી"),
             ("wheat", "🌾", "ઘઉં"), ("pigeon", "🫘", "તુવેર"), ("sorghum", "🌽", "જ્વાર"),
         ]
         mini_cols = st.columns(len(crops_mini))
         for i, (cid, icon, lbl) in enumerate(crops_mini):
-            if mini_cols[i].button(f"{icon}", key=f"home_crop_{cid}", help=lbl):
+            if mini_cols[i].button(f"{icon}\n{lbl}", key=f"home_crop_{cid}", help=f"{lbl} પસંદ કરો"):
                 st.session_state["selected_crop"] = cid
                 st.rerun()
+
+        if st.button("🌱 સંપૂર્ણ પાક સલાહ જુઓ →", key="btn_more_crop", use_container_width=True):
+            st.session_state["active_section"] = "crop_advisory"
+            st.rerun()
 
     # --- Panel 5: Weather & Alerts ---
     with col5:
@@ -219,6 +288,9 @@ def render_home_section():
             alert_text=alert
         )
         st.markdown(f'<div class="panel-card">{weather_html}</div>', unsafe_allow_html=True)
+        if st.button("🌤️ 5-દિવસ હવામાન અને AQI જુઓ →", key="btn_more_weather", use_container_width=True):
+            st.session_state["active_section"] = "weather"
+            st.rerun()
 
     # --- Panel 6: Market Prices ---
     with col6:
@@ -230,6 +302,9 @@ def render_home_section():
       color:var(--text-primary);margin-bottom:0.4rem;">બજાર ભાવ (આજના)</div>
   {price_html}
 </div>"""), unsafe_allow_html=True)
+        if st.button("💰 બધા પાકના બજાર ભાવ જુઓ →", key="btn_more_prices", use_container_width=True):
+            st.session_state["active_section"] = "prices"
+            st.rerun()
 
     st.markdown('<div style="height:0.5rem;"></div>', unsafe_allow_html=True)
 
@@ -246,29 +321,65 @@ def render_home_section():
             recs=soil["recs"]
         )
         st.markdown(f'<div class="panel-card">{soil_html}</div>', unsafe_allow_html=True)
+        if st.button("🧪 સંપૂર્ણ માટી તપાસ રિપોર્ટ જુઓ →", key="btn_more_soil", use_container_width=True):
+            st.session_state["active_section"] = "soil_test"
+            st.rerun()
 
-    # --- Panel 8: Government Schemes ---
+    # --- Panel 8: Government Schemes (Clickable Scheme Buttons) ---
     with col8:
         st.markdown(panel_badge("8", "Government Schemes"), unsafe_allow_html=True)
-        schemes_html = render_schemes_panel_mini(_DEFAULT_SCHEMES)
-        st.markdown(clean_html(f"""
-<div class="panel-card">
-  <div style="font-family:'Noto Sans Gujarati',sans-serif;font-size:0.82rem;font-weight:700;
-      color:var(--text-primary);margin-bottom:0.4rem;">સરકારી યોજના</div>
-  {schemes_html}
+        with st.container():
+            st.markdown(clean_html("""
+<div style="font-family:'Noto Sans Gujarati',sans-serif;font-size:0.88rem;font-weight:700;
+    color:var(--text-primary);margin-bottom:0.4rem;">
+  સરકારી યોજના
 </div>"""), unsafe_allow_html=True)
+
+            # Render 3 interactive scheme rows with buttons
+            for idx, (icon, name, sub, query_text) in enumerate(_DEFAULT_SCHEMES):
+                sc1, sc2 = st.columns([3.2, 1.8])
+                with sc1:
+                    st.markdown(clean_html(f"""
+<div style="display:flex;align-items:center;gap:0.4rem;padding:0.25rem 0;">
+  <span style="font-size:1.1rem;">{icon}</span>
+  <div>
+    <div style="font-family:'Noto Sans Gujarati',sans-serif;font-size:0.8rem;font-weight:700;color:var(--text-primary);">{name}</div>
+    <div style="font-family:'Noto Sans Gujarati',sans-serif;font-size:0.65rem;color:var(--text-muted);">{sub}</div>
+  </div>
+</div>"""), unsafe_allow_html=True)
+                with sc2:
+                    if st.button("વધુ જાણો →", key=f"btn_scheme_item_{idx}", use_container_width=True, help=f"{name} ની માહિતી"):
+                        query_to_process = query_text
+
+            st.markdown("<div style='height:0.25rem;'></div>", unsafe_allow_html=True)
+            if st.button("📄 બધી સરકારી યોજનાઓ જુઓ →", key="btn_more_schemes", use_container_width=True):
+                st.session_state["active_section"] = "schemes"
+                st.rerun()
 
     # --- Panel 9: History & Saved ---
     with col9:
         st.markdown(panel_badge("9", "History & Saved"), unsafe_allow_html=True)
-        history_html = render_history_panel_mini(messages)
-        st.markdown(clean_html(f"""
-<div class="panel-card">
-  <div class="history-panel-header">
-    <div class="history-panel-title">મારો ઇતિહાસ</div>
-  </div>
-  {history_html}
+        with st.container():
+            st.markdown(clean_html("""
+<div class="history-panel-header">
+  <div class="history-panel-title">મારો ઇતિહાસ</div>
 </div>"""), unsafe_allow_html=True)
+
+            if messages:
+                for idx, msg in enumerate(reversed(messages[-3:])):
+                    q_text = msg.get("gu_transcript", "")[:35]
+                    if st.button(f"🔄 {q_text}…", key=f"btn_hist_replay_{idx}", use_container_width=True, help="આ પ્રશ્ન ફરી પૂછો"):
+                        query_to_process = msg.get("gu_transcript", "")
+            else:
+                st.markdown(clean_html("""
+<div class="history-empty" style="padding:1rem 0;">
+  <div style="font-size:1.2rem;margin-bottom:0.2rem;">📭</div>
+  <div>હજુ કોઈ પ્રશ્ન પૂછ્યો નથી</div>
+</div>"""), unsafe_allow_html=True)
+
+            if st.button("📖 સંપૂર્ણ ઇતિહાસ જુઓ →", key="btn_more_history", use_container_width=True):
+                st.session_state["active_section"] = "history"
+                st.rerun()
 
     st.markdown('<div style="height:0.75rem;"></div>', unsafe_allow_html=True)
 
@@ -278,7 +389,7 @@ def render_home_section():
     st.markdown(render_feature_footer(), unsafe_allow_html=True)
 
     # ─────────────────────────────────────────────────────
-    #  VOICE / TEXT INPUT (below the grid)
+    #  BOTTOM VOICE / TEXT CHAT BAR
     # ─────────────────────────────────────────────────────
     st.markdown(
         '<div style="margin-top:1.25rem;border-top:1px solid var(--border-subtle);'
@@ -288,7 +399,7 @@ def render_home_section():
     st.markdown(clean_html("""
 <div style="font-family:'Space Grotesk',sans-serif;font-size:1rem;font-weight:700;
     color:var(--text-primary);margin-bottom:0.5rem;">
-  🎤 AI ને સીધો પ્રશ્ન પૂછો
+  🎤 AI ને સીધો પ્રશ્ન પૂછો અથવા ફાઇલ અપલોડ કરો
 </div>"""), unsafe_allow_html=True)
 
     col_mic, col_upload = st.columns([1, 2])
@@ -303,44 +414,27 @@ def render_home_section():
         )
         if audio_recorder is not None:
             recorded_bytes = audio_recorder(
-                text="",
-                recording_color=tokens["accent"],
-                neutral_color=tokens["border_subtle"],
+                text="માઇક દબાવો",
+                recording_color="#DC2626",
+                neutral_color=tokens["accent"],
                 icon_name="microphone",
-                icon_size="2x"
+                icon_size="2x",
+                key="bottom_voice_mic"
             )
 
     with col_upload:
         uploaded_file = st.file_uploader(
             "ઓડિયો ફાઇલ (WAV/MP3):",
             type=["wav", "mp3", "m4a"],
-            label_visibility="collapsed"
+            label_visibility="collapsed",
+            key="bottom_file_uploader"
         )
         if uploaded_file is not None:
             recorded_bytes = uploaded_file.read()
 
     user_text_input = st.chat_input("ગુજરાતીમાં પ્રશ્ન ટાઇપ કરો… (Type question in Gujarati)")
 
-    # ── Quick Chips ───────────────────────────────────
-    quick_chip_selected = None
-    if not messages:
-        c1, c2, c3, c4, c5 = st.columns(5)
-        if c1.button("💰 ભાવ", use_container_width=True, key="chip_price"):
-            quick_chip_selected = f"આજે {district} માં કપાસનો ભાવ કેટલો?"
-        if c2.button("☔ હવામાન", use_container_width=True, key="chip_weather"):
-            quick_chip_selected = f"આવતીકાલે {district} માં વરસાદ પડશે?"
-        if c3.button("📄 PM-KISAN", use_container_width=True, key="chip_scheme"):
-            quick_chip_selected = "PM-KISAN યોજનામાં વાર્ષિક કેટલા રૂપિયા મળે છે?"
-        if c4.button("🌱 ખાતર", use_container_width=True, key="chip_fertilizer"):
-            quick_chip_selected = "કપાસ માટે કેટલું ખાતર નાખવું?"
-        if c5.button("🐛 રોગ", use_container_width=True, key="chip_disease"):
-            quick_chip_selected = "કપાસના પાકમાં ગેરુ રોગ નું નિયંત્રણ?"
-
-    # ── Process Query ──────────────────────────────────
-    query_to_process = None
-    is_audio_query = False
-
-    import hashlib
+    # ── Handle Input Processing ────────────────────────
     if recorded_bytes:
         audio_hash = hashlib.md5(recorded_bytes).hexdigest()
         if audio_hash != st.session_state.get("last_processed_audio_hash"):
@@ -349,8 +443,6 @@ def render_home_section():
             st.session_state["last_processed_audio_hash"] = audio_hash
     elif user_text_input:
         query_to_process = user_text_input
-    elif quick_chip_selected:
-        query_to_process = quick_chip_selected
 
     if query_to_process:
         with st.spinner("જવાબ તૈયાર થઈ રહ્યો છે…"):
@@ -377,11 +469,11 @@ def render_home_section():
                 st.warning(result.get("error",
                     "કોઈ અવાજ કે લખાણ ઓળખાયું નથી. ફરીથી બોલો અથવા ટાઇપ કરો."))
 
-    # ── Conversation History ───────────────────────────
+    # ── Conversation History Render ───────────────────
     if messages:
         st.markdown(
             '<div style="font-family:\'Space Grotesk\',sans-serif;font-size:0.9rem;font-weight:700;'
-            'color:var(--text-primary);margin:1rem 0 0.5rem 0;">💬 વાર્તાલાપ</div>',
+            'color:var(--text-primary);margin:1rem 0 0.5rem 0;">💬 વાર્તાલાપ (Chat History)</div>',
             unsafe_allow_html=True
         )
         for msg in messages:
