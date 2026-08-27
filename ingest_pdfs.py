@@ -2,10 +2,12 @@
 Standalone PDF Document Ingestion CLI for Gujarati Kisaan Mitra AI.
 Converts PDFs under data/pdfs/ into page-level chunks, extracts text via PyMuPDF/OCR,
 generates embeddings, and upserts into the document_chunks vector database.
+Supports smart incremental ingestion (skips already ingested files unless forced).
 """
 
 import sys
 import shutil
+import sqlite3
 import logging
 from pathlib import Path
 from typing import Dict, Any, List
@@ -45,7 +47,10 @@ def organize_root_pdfs():
         dest_dir = target_scheme if cat == "scheme" else (target_crop if cat == "crop_advisory" else target_general)
         dest = dest_dir / pdf_file.name
         logger.info(f"Organizing root PDF '{pdf_file.name}' -> {dest.relative_to(root_dir)}")
-        shutil.copy2(pdf_file, dest)
+        try:
+            shutil.copy2(pdf_file, dest)
+        except Exception:
+            pass
 
     # 2. Check loose PDFs directly under data/pdfs/
     for pdf_file in settings.PDF_DIR.glob("*.pdf"):
@@ -53,7 +58,10 @@ def organize_root_pdfs():
         dest_dir = target_scheme if cat == "scheme" else (target_crop if cat == "crop_advisory" else target_general)
         dest = dest_dir / pdf_file.name
         logger.info(f"Organizing loose PDF '{pdf_file.name}' -> {dest.relative_to(root_dir)}")
-        shutil.move(str(pdf_file), str(dest))
+        try:
+            shutil.move(str(pdf_file), str(dest))
+        except Exception:
+            pass
 
 
 def determine_category(pdf_path: Path) -> str:
@@ -64,15 +72,21 @@ def determine_category(pdf_path: Path) -> str:
     elif parent_name in ["crop_advisory", "crop", "advisory"]:
         return "crop_advisory"
 
-    # Check filename heuristics
     fname = pdf_path.name.lower()
-    if "scheme" in fname or "yojana" in fname or "kisan" in fname or "pmkisan" in fname:
+    if "scheme" in fname or "yojana" in fname or "kisan" in fname or "pmkisan" in fname or "યોજના" in fname or "સહાય" in fname:
         return "scheme"
     elif (
         "crop" in fname
         or "એગ્રીકલ્ચર" in fname
+        or "ખેતી" in fname
+        or "કુદરતી" in fname
+        or "નેચરલ" in fname
+        or "ફાર્મિંગ" in fname
+        or "farming" in fname
+        or "organic" in fname
         or "advisory" in fname
         or "krushi" in fname
+        or "કૃષિ" in fname
         or "agriculture" in fname
         or "viewfile" in fname
         or "jess104" in fname
@@ -81,7 +95,19 @@ def determine_category(pdf_path: Path) -> str:
     return "general"
 
 
-def run_pdf_ingestion() -> Dict[str, Any]:
+def get_existing_filenames_in_db() -> set:
+    """Returns set of source_filenames already indexed in local SQLite."""
+    try:
+        with sqlite3.connect(db_manager.db_path) as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT DISTINCT source_filename FROM document_chunks WHERE char_count > 10")
+            rows = cursor.fetchall()
+            return {r[0] for r in rows if r[0]}
+    except Exception:
+        return set()
+
+
+def run_pdf_ingestion(force_reindex: bool = False) -> Dict[str, Any]:
     """Executes end-to-end ingestion pipeline over all discovered PDFs."""
     print("=" * 70)
     print("🚀 GUJARATI KISAAN MITRA AI — PDF DOCUMENT INGESTION PIPELINE")
@@ -96,7 +122,8 @@ def run_pdf_ingestion() -> Dict[str, Any]:
         print("⚠️ No PDF files found under data/pdfs/ directory.")
         return {}
 
-    print(f"📄 Discovered {len(pdf_files)} PDF document(s) for ingestion.\n")
+    existing_files = set() if force_reindex else get_existing_filenames_in_db()
+    print(f"📄 Discovered {len(pdf_files)} PDF document(s). ({len(existing_files)} already in database)\n")
 
     total_pages_processed = 0
     total_ocr_pages = 0
@@ -107,7 +134,11 @@ def run_pdf_ingestion() -> Dict[str, Any]:
         category = determine_category(pdf_path)
         filename = pdf_path.name
 
-        print(f" Processing [{category.upper()}]: {filename}...")
+        if not force_reindex and filename in existing_files:
+            print(f" ⏩ Skipping already indexed: {filename}")
+            continue
+
+        print(f" 📄 Processing [{category.upper()}]: {filename}...")
 
         try:
             # Step 1: Extract pages (PyMuPDF + OCR fallback)
@@ -162,17 +193,20 @@ def run_pdf_ingestion() -> Dict[str, Any]:
     print("\n" + "=" * 70)
     print("📊 INGESTION SUMMARY REPORT")
     print("=" * 70)
-    print(f" Total PDF Files Processed: {len(files_summary)}")
-    print(f" Total Pages Read        : {total_pages_processed} ({total_ocr_pages} via Tesseract OCR)")
-    print(f" Total Vector Chunks     : {total_chunks_created}")
+    print(f" New PDF Files Processed : {len(files_summary)}")
+    print(f" New Pages Read          : {total_pages_processed} ({total_ocr_pages} via Tesseract OCR)")
+    print(f" New Vector Chunks       : {total_chunks_created}")
 
     db_summary = db_manager.get_ingestion_summary()
-    print(f" Language Breakdown       : {db_summary.get('language_breakdown', {})}")
-    print(f" Category Breakdown       : {db_summary.get('category_breakdown', {})}")
+    print(f" Total Chunks in DB      : {db_summary.get('total_chunks', 0)}")
+    print(f" Total Unique Files in DB: {db_summary.get('total_files', 0)}")
+    print(f" Language Breakdown      : {db_summary.get('language_breakdown', {})}")
+    print(f" Category Breakdown      : {db_summary.get('category_breakdown', {})}")
     print("=" * 70)
 
     return db_summary
 
 
 if __name__ == "__main__":
-    run_pdf_ingestion()
+    force = "--force" in sys.argv
+    run_pdf_ingestion(force_reindex=force)
